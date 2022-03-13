@@ -85,8 +85,8 @@ int main(int argc, char **argv)
 	// GLUT initialization
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(1440,1080);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(800,600);
 
 	glutCreateWindow(argv[0]);
 	glutDisplayFunc(drawCallback);

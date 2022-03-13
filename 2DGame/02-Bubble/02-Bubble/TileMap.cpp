@@ -76,25 +76,28 @@ bool TileMap::loadLevel(const string &levelFile)
 	sstream.str(line);
 	sstream >> tilesheetSize.x >> tilesheetSize.y;
 	tileTexSize = glm::vec2(1.f / tilesheetSize.x, 1.f / tilesheetSize.y);
-	
+	string tileId = "";
+
 	map = new int[mapSize.x * mapSize.y];
-	for(int j=0; j<mapSize.y; j++)
+	for (int j = 0; j < mapSize.y; j++)
 	{
-		for(int i=0; i<mapSize.x; i++)
+		for (int i = 0; i < mapSize.x; i++)
 		{
 			fin.get(tile);
-			if(tile == ' ')
-				map[j*mapSize.x+i] = 0;
-			else
-				map[j*mapSize.x+i] = tile - int('0');
+			while (tile != ' ') {
+				tileId += tile;
+				fin.get(tile);
+			}
+			map[j * mapSize.x + i] = stoi(tileId);
+			tileId = "";
 		}
 		fin.get(tile);
 #ifndef _WIN32
 		fin.get(tile);
 #endif
-	}
+		}
 	fin.close();
-	
+
 	return true;
 }
 
@@ -205,7 +208,27 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 }
 
 
+bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int* posY) const
+{
+	int y, x0, x1;
 
+	y = pos.y / tileSize;
+	x0 = pos.x / tileSize;
+	x1 = (pos.x + size.x - 1) / tileSize;
+	for (int x = x0; x <= x1; x++)
+	{
+		if (map[y * mapSize.x] != 0)
+		{
+			if (*posY - tileSize * y + size.y <= 4)
+			{
+				*posY = tileSize * y - size.y;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 
 

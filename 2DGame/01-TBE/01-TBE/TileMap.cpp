@@ -90,9 +90,6 @@ bool TileMap::loadLevel(const string &levelFile)
 			}
 			map[j * mapSize.x + i] = stoi(tileId);
 			tileId = "";
-
-			//else
-				//map[j*mapSize.x+i] = tile - int('0');
 		}
 		fin.get(tile);
 #ifndef _WIN32

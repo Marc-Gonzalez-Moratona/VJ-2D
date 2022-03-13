@@ -40,7 +40,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.25f));
 		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25, 0.5f));
 		
-	sprite->changeAnimation(0);
+	sprite->changeAnimation(1);
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	
@@ -90,6 +90,13 @@ void Player::update(int deltaTime)
 		else
 		{
 			posPlayer.y = int(startY - 96 * sin(3.14159f * jumpAngle / 180.f));
+			if (jumpAngle < 90)
+				if(map->collisionMoveUp(posPlayer, glm::ivec2(32, 32), &posPlayer.y)) jumpAngle=90;
+				/*if (map->collisionMoveRight(posPlayer, glm::ivec2(32, 32)))
+				{
+					posPlayer.x -= 2;
+					sprite->changeAnimation(STAND_RIGHT);
+				}*/
 			if(jumpAngle > 90)
 				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(32, 32), &posPlayer.y);
 		}
