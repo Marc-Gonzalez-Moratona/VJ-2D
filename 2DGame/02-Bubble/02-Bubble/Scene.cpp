@@ -5,8 +5,8 @@
 #include "Game.h"
 
 
-#define SCREEN_X 120
-#define SCREEN_Y 50
+#define SCREEN_X 0
+#define SCREEN_Y 0
 
 #define INIT_PLAYER_X_TILES 1
 #define INIT_PLAYER_Y_TILES 11

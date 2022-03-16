@@ -7,7 +7,7 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 48
+#define JUMP_HEIGHT 60
 #define FALL_STEP 4
 
 
@@ -15,16 +15,17 @@ enum PlayerAnims
 {
 	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT, 
 	LOOK_DOWN_LEFT, LOOK_DOWN_RIGHT, LOOK_UP_LEFT, LOOK_UP_RIGHT,
-	JUMP_LEFT, JUMP_RIGHT
+	JUMP_LEFT, JUMP_RIGHT, CLIMB_LEFT, CLIMB_RIGHT
 };
 
 
 void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 {
 	bJumping = false;
+	bClimbing = false;
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	sprite = Sprite::createSprite(glm::ivec2(16, 16), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
-	sprite->setNumberAnimations(10);
+	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
+	sprite->setNumberAnimations(12);
 	
 		sprite->setAnimationSpeed(STAND_LEFT, 8);
 		sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
@@ -59,6 +60,12 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 
 		sprite->setAnimationSpeed(JUMP_RIGHT, 8);
 		sprite->addKeyframe(JUMP_RIGHT, glm::vec2(0.25f, 0.75f));
+
+		sprite->setAnimationSpeed(CLIMB_LEFT, 8);
+		sprite->addKeyframe(CLIMB_LEFT, glm::vec2(0.5f, 0.5f));
+
+		sprite->setAnimationSpeed(CLIMB_RIGHT, 8);
+		sprite->addKeyframe(CLIMB_RIGHT, glm::vec2(0.75f, 0.5f));
 		
 	sprite->changeAnimation(1);
 	tileMapDispl = tileMapPos;
@@ -73,10 +80,10 @@ void Player::update(int deltaTime)
 	{
 		if(sprite->animation() != MOVE_LEFT)
 			sprite->changeAnimation(MOVE_LEFT);
-		posPlayer.x -= 2;
-		if(map->collisionMoveLeft(posPlayer, glm::ivec2(16, 16)))
+		posPlayer.x -= 3;
+		if(map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24)))
 		{
-			posPlayer.x += 2;
+			posPlayer.x += 3;
 			sprite->changeAnimation(STAND_LEFT);
 		}
 	}
@@ -84,10 +91,10 @@ void Player::update(int deltaTime)
 	{
 		if(sprite->animation() != MOVE_RIGHT)
 			sprite->changeAnimation(MOVE_RIGHT);
-		posPlayer.x += 2;
-		if(map->collisionMoveRight(posPlayer, glm::ivec2(16, 16)))
+		posPlayer.x += 3;
+		if(map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)))
 		{
-			posPlayer.x -= 2;
+			posPlayer.x -= 3;
 			sprite->changeAnimation(STAND_RIGHT);
 		}
 	}
@@ -141,23 +148,39 @@ void Player::update(int deltaTime)
 		{
 			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
 			if (jumpAngle < 90)
-				if(map->collisionMoveUp(posPlayer, glm::ivec2(16, 16), &posPlayer.y)) jumpAngle=90;
-				/*if (map->collisionMoveRight(posPlayer, glm::ivec2(16, 16)))
-				{
-					posPlayer.x -= 2;
-					sprite->changeAnimation(STAND_RIGHT);
-				}*/
+				if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) {
+					bJumping = false;
+					if (sprite->animation() == JUMP_LEFT)
+						sprite->changeAnimation(STAND_LEFT);
+					else if (sprite->animation() == JUMP_RIGHT)
+						sprite->changeAnimation(STAND_RIGHT);
+					if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)))
+					{
+						posPlayer.x -= 3;
+						sprite->changeAnimation(CLIMB_LEFT);
+						bClimbing = true;
+						bJumping = false;
+					}
+					else if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24)))
+					{
+						posPlayer.x -= 3;
+						sprite->changeAnimation(CLIMB_RIGHT);
+						bClimbing = true;
+						bJumping = false;
+					}
+				}
+
 			if (jumpAngle > 90) 
-				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(16, 16), &posPlayer.y);
+				bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.y);
 		}
 	}
 	else
 	{
 		posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(16, 16), &posPlayer.y))
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.y))
 		{
 			// MUST BE CHANGED TO SPACEBAR
-			if (Game::instance().getSpecialKey(GLUT_KEY_F1))
+			if (Game::instance().getKey(' '))
 			{
 				bJumping = true;
 				jumpAngle = 0;
