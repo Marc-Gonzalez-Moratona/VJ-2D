@@ -76,7 +76,13 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 void Player::update(int deltaTime)
 {
 	sprite->update(deltaTime);
-	if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+	if (Game::instance().getKey('1')) {
+		map->changeLevel(1);
+	}
+	else if(Game::instance().getKey('2')){
+		map->changeLevel(2);
+	}
+	else if(Game::instance().getSpecialKey(GLUT_KEY_LEFT))
 	{
 		if(sprite->animation() == JUMP_RIGHT)
 			sprite->changeAnimation(JUMP_LEFT);

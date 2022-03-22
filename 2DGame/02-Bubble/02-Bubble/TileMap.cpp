@@ -45,6 +45,10 @@ void TileMap::free()
 	glDeleteBuffers(1, &vbo);
 }
 
+void TileMap::changeLevel(int level) {
+	
+}
+
 bool TileMap::loadLevel(const string &levelFile)
 {
 	ifstream fin;
@@ -76,26 +80,17 @@ bool TileMap::loadLevel(const string &levelFile)
 	sstream.str(line);
 	sstream >> tilesheetSize.x >> tilesheetSize.y;
 	tileTexSize = glm::vec2(1.f / tilesheetSize.x, 1.f / tilesheetSize.y);
-	string tileId = "";
+	int tileId;
 
 	map = new int[mapSize.x * mapSize.y];
 	for (int j = 0; j < mapSize.y; j++)
 	{
 		for (int i = 0; i < mapSize.x; i++)
 		{
-			fin.get(tile);
-			while (tile != ' ') {
-				tileId += tile;
-				fin.get(tile);
-			}
-			map[j * mapSize.x + i] = stoi(tileId);
-			tileId = "";
+			fin >> tileId;
+			map[j * mapSize.x + i] = tileId;
 		}
-		fin.get(tile);
-#ifndef _WIN32
-		fin.get(tile);
-#endif
-		}
+	}
 	fin.close();
 
 	return true;
