@@ -79,16 +79,16 @@ bool TileMap::loadLevel(const string &levelFile)
 	string tileId = "";
 	
 	map = new int[mapSize.x * mapSize.y];
-	for(int j=0; j<mapSize.y; j++)
+	for(int j=0; j<16; j++)
 	{
-		for(int i=0; i<mapSize.x; i++)
+		for(int i=0; i<16; i++)
 		{
 			fin.get(tile);
 			while (tile != ' ') {
 				tileId += tile;
 				fin.get(tile);
 			}
-			map[j * mapSize.x + i] = stoi(tileId);
+			map[j * 16 + i] = stoi(tileId);
 			tileId = "";
 		}
 		fin.get(tile);
