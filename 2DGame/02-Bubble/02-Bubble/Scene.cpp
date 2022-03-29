@@ -5,11 +5,11 @@
 #include "Game.h"
 
 
-#define SCREEN_X 0
-#define SCREEN_Y 0
+#define SCREEN_X 100
+#define SCREEN_Y 25
 
 #define INIT_PLAYER_X_TILES 1
-#define INIT_PLAYER_Y_TILES 11
+#define INIT_PLAYER_Y_TILES 32
 
 
 Scene::Scene()
@@ -52,7 +52,7 @@ void Scene::render()
 	texProgram.use();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
-	modelview = glm::mat4(1.0f);
+	modelview = glm::translate(glm::mat4(1.0f), glm::vec3(0,-432,0));
 	texProgram.setUniformMatrix4f("modelview", modelview);
 	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
