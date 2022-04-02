@@ -9,7 +9,7 @@
 #define SCREEN_Y 25
 
 #define INIT_PLAYER_X_TILES 1
-#define INIT_PLAYER_Y_TILES 32
+#define INIT_PLAYER_Y_TILES 12
 
 
 Scene::Scene()
@@ -37,24 +37,70 @@ void Scene::init()
 	player->setTileMap(map);
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
+	level = 1;
 }
+
 
 void Scene::update(int deltaTime)
 {
 	currentTime += deltaTime;
-	player->update(deltaTime);
+	if (Game::instance().getKey('1')) { 
+		level = 1; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+	}
+	if (Game::instance().getKey('2')) { 
+		level = 2; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 30 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('3')) { 
+		level = 3; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 48 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('4')) { 
+		level = 4; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 66 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('5')) { 
+		level = 5; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 84 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('6')) { 
+		level = 6; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 102 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('7')) { 
+		level = 7; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 120 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('8')) { 
+		level = 8; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 138 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('9')) { 
+		level = 9; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 156 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('0')) { 
+		level = 10; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 174 * map->getTileSize()));
+	}
+	if (Game::instance().getKey('f')) { 
+		level = 11; 
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 192 * map->getTileSize()));
+	}
+
+	glm::mat4 modelview;
+	texProgram.use();
+	texProgram.setUniformMatrix4f("projection", projection);
+	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+	modelview = glm::translate(glm::mat4(1.0f), glm::vec3(0, -432*(level-1), 0));
+	texProgram.setUniformMatrix4f("modelview", modelview);
+	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
+	player->update(deltaTime, level);
 }
 
 void Scene::render()
 {
-	glm::mat4 modelview;
-
-	texProgram.use();
-	texProgram.setUniformMatrix4f("projection", projection);
-	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
-	modelview = glm::translate(glm::mat4(1.0f), glm::vec3(0,-432,0));
-	texProgram.setUniformMatrix4f("modelview", modelview);
-	texProgram.setUniform2f("texCoordDispl", 0.f, 0.f);
 	map->render();
 	player->render();
 }

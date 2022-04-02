@@ -26,6 +26,9 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	bClimbing = false;
 	bClimbJumping = false;
 	bDash = true;
+	bGodMode = false;
+	bDashMode = false;
+	bSlowMode = false;
 	climbJumpingCount = 0;
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
@@ -72,17 +75,20 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 		sprite->addKeyframe(CLIMB_RIGHT, glm::vec2(0.75f, 0.5f));
 		
 	sprite->changeAnimation(1);
-	tileMapDispl = tileMapPos;
-	tileMapDispl.y -= 432;
+	tileMapDispl = tileMapPos; 
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 	
 }
 
-void Player::update(int deltaTime)
+void Player::update(int deltaTime, int level)
 {
+	tileMapDispl.y = 25-432*(level-1);
 	sprite->update(deltaTime);
+	if (Game::instance().getKey('g')) bGodMode = !bGodMode;
+	if (Game::instance().getKey('d')) bDashMode = !bDashMode;
+	if (Game::instance().getKey('s')) bSlowMode = !bSlowMode;
 	if (Game::instance().getKey('c') && bDash) {
-		bClimbJumping = false;
+			bClimbJumping = false;
 		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) posPlayer.x -= DASH_STEP;
 		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) posPlayer.x += DASH_STEP;
 		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) posPlayer.y -= DASH_STEP;
@@ -262,7 +268,6 @@ void Player::update(int deltaTime)
 		}
 		else if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !Game::instance().getSpecialKey(GLUT_KEY_LEFT)) bClimbing = false;
 	}
-	
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 }
 

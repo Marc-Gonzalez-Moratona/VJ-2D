@@ -32,6 +32,9 @@ private:
 	ShaderProgram texProgram;
 	float currentTime;
 	glm::mat4 projection;
+	glm::mat4 modelview;
+	glm::vec3 mapposition;
+	int level;
 
 };
 
