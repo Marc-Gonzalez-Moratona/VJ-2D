@@ -23,9 +23,9 @@ public:
 	void setInitialPosition(int X, int Y);
 	
 private:
-	bool bJumping, bClimbing, bClimbJumping, bDash, bDashing, bDashUP, bDashDOWN, bDashLEFT, bDashRIGHT;
+	bool bJumping, bClimbing, bClimbJumping, bDash, bDashing, bDashUP, bDashDOWN, bDashLEFT, bDashRIGHT, bGrabbing;
 	glm::ivec2 tileMapDispl, posPlayer;
-	int jumpAngle, startY, climbJumpingCount, dashingCount, initialX, initialY;
+	int jumpAngle, dashAngle, startY, climbJumpingCount, dashingCount, initialX, initialY, dashDirection, dashFrame, dashY;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;

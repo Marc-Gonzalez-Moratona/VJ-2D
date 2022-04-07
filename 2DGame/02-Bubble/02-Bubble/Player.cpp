@@ -9,8 +9,8 @@
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 60
 #define FALL_STEP 4
-#define DASH_STEP 8
-
+#define DASH_ANGLE_STEP 4
+#define DASH_HEIGHT 68
 
 enum PlayerAnims
 {
@@ -34,8 +34,12 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	bGodMode = false;
 	bDashMode = false;
 	bSlowMode = false;
+	bGrabbing = false;
 	climbJumpingCount = 0;
 	dashingCount = 0;
+	dashDirection = 0;
+	dashFrame = 0;
+	setInitialPosition(24, 12 * 24);
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(12);
@@ -86,6 +90,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	
 }
 
+
 void Player::update(int deltaTime, int level)
 {
 	tileMapDispl.y = 25 - 432 * (level - 1);
@@ -94,170 +99,73 @@ void Player::update(int deltaTime, int level)
 	if (Game::instance().getKey('d')) bDashMode = !bDashMode;
 	if (Game::instance().getKey('s')) bSlowMode = !bSlowMode;
 
-	if (Game::instance().getKey('x') && bDash) {
-		bDash = false;
-		bJumping = false;
-		dashingCount = 0;
-		bDashing = true;
-		if (Game::instance().getSpecialKey(GLUT_KEY_UP)) {
-			bDashUP = true;
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
-			bDashRIGHT = true;
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) {
-			bDashDOWN = true;
-		}
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-			bDashLEFT = true;
-		}
-		else if (!bDashUP && !bDashDOWN) {
-			if (sprite->animation() == MOVE_RIGHT || sprite->animation() == JUMP_RIGHT || sprite->animation() == STAND_RIGHT) {
-				bDashRIGHT = true;
-			}
-			else if (sprite->animation() == MOVE_LEFT || sprite->animation() == JUMP_LEFT || sprite->animation() == STAND_LEFT) {
-				bDashLEFT = true;
-			}
-		}
-	}
-	if (bDashing) {
-		if (dashingCount == 8) {
-			bDashing = false;
-			bDashUP = false;
-			bDashDOWN = false;
-			bDashRIGHT = false;
-			bDashLEFT = false;
-		}
-		else {
-			if (bDashUP) {
-				if (bDashLEFT) {
-					posPlayer.x -= DASH_STEP + 4;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-						posPlayer.x += DASH_STEP;
-						dashingCount = 8;
-					}
-				}
-				else if (bDashRIGHT) {
-					posPlayer.x += DASH_STEP;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-						posPlayer.x -= DASH_STEP;
-						dashingCount = 8;
-					}
-				}
-				posPlayer.y -= DASH_STEP + 3;
-				if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) {
-					posPlayer.y += DASH_STEP;
-					dashingCount = 8;
-				}
-			}
-			else if (bDashDOWN) {
-				if (bDashLEFT) {
-					posPlayer.x -= DASH_STEP;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-						posPlayer.x += DASH_STEP;
-						dashingCount = 8;
-					}
-				}
-				else if (bDashRIGHT) {
-					posPlayer.x += DASH_STEP;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-						posPlayer.x -= DASH_STEP;
-						dashingCount = 8;
-					}
-				}
-				posPlayer.y += DASH_STEP - 4;
-				if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24),&posPlayer.x ,&posPlayer.y, initialX, initialY)) {
-					posPlayer.y -= DASH_STEP;
-					dashingCount = 8;
-				}
-			}
-			else if (bDashLEFT) {
-				posPlayer.x -= DASH_STEP;
-				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-					posPlayer.x += DASH_STEP;
-					dashingCount = 8;
-				}
-			}
-			else if (bDashRIGHT) {
-				posPlayer.x += DASH_STEP;
-				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
-					posPlayer.x -= DASH_STEP;
-					dashingCount = 8;
-				}
-			}
-			dashingCount++;
-		}
-	}
-	if (!bClimbJumping && !bDashing) {
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT))
+	// WALK
+	if (bDash || dashAngle > 60) {
+		// MOVE LEFT
+		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping)
 		{
-			if (sprite->animation() == JUMP_RIGHT)
-				sprite->changeAnimation(JUMP_LEFT);
-			else if (sprite->animation() != MOVE_LEFT)
-				if (!bJumping) sprite->changeAnimation(MOVE_LEFT);
 			posPlayer.x -= 3;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24)))
-			{
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
 				posPlayer.x += 3;
-				if (bJumping && jumpAngle > 90 || !bJumping && !map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY)) {
-					bClimbing = true;
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+					if(!Game::instance().getKey('c')) bClimbing = true;
+					bGrabbing = true;
 					sprite->changeAnimation(CLIMB_RIGHT);
 				}
-				else {
-					bClimbing = false;
-					if (sprite->animation() != JUMP_LEFT) sprite->changeAnimation(STAND_LEFT);
-				}
 			}
+			else if (sprite->animation() != MOVE_LEFT) sprite->changeAnimation(MOVE_LEFT);
 		}
-		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT))
+		// MOVE RIGHT
+		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping)
 		{
-			if (sprite->animation() == JUMP_LEFT)
-				sprite->changeAnimation(JUMP_RIGHT);
-			else if (sprite->animation() != MOVE_RIGHT)
-				if (!bJumping) sprite->changeAnimation(MOVE_RIGHT);
 			posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)))
-			{
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
 				posPlayer.x -= 3;
-				if (bJumping && jumpAngle > 90 || !bJumping && !map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY)) {
-					bClimbing = true;
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+					if (!Game::instance().getKey('c')) bClimbing = true;
+					bGrabbing = true;
 					sprite->changeAnimation(CLIMB_LEFT);
 				}
-				else {
-					bClimbing = false;
-					if (sprite->animation() != JUMP_RIGHT) sprite->changeAnimation(STAND_RIGHT);
-				}
 			}
+			else if (sprite->animation() != MOVE_RIGHT) sprite->changeAnimation(MOVE_RIGHT);
 		}
+		// LOOK DOWN
 		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
 		{
-			if (sprite->animation() != LOOK_DOWN_RIGHT && sprite->animation() != LOOK_DOWN_LEFT) {
-				if (sprite->animation() == STAND_LEFT)
-					sprite->changeAnimation(LOOK_DOWN_LEFT);
-				else if (sprite->animation() == STAND_RIGHT)
-					sprite->changeAnimation(LOOK_DOWN_RIGHT);
-			}
+			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
+				sprite->changeAnimation(LOOK_DOWN_LEFT);
+			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
+				sprite->changeAnimation(LOOK_DOWN_RIGHT);
 		}
+		// LOOK UP
 		else if (Game::instance().getSpecialKey(GLUT_KEY_UP))
 		{
-			if (sprite->animation() != LOOK_UP_RIGHT && sprite->animation() != LOOK_UP_LEFT) {
-				if (sprite->animation() == STAND_LEFT)
-					sprite->changeAnimation(LOOK_UP_LEFT);
-				else if (sprite->animation() == STAND_RIGHT)
-					sprite->changeAnimation(LOOK_UP_RIGHT);
-			}
+			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
+				sprite->changeAnimation(LOOK_UP_LEFT);
+			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
+				sprite->changeAnimation(LOOK_UP_RIGHT);
 		}
-		else if (Game::instance().getKey('z'))
-		{
-			if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
-				if (sprite->animation() == STAND_LEFT)
-					sprite->changeAnimation(LOOK_UP_LEFT);
-				else if (sprite->animation() == STAND_RIGHT)
-					sprite->changeAnimation(LOOK_UP_RIGHT);
-			}
-		}
+		// NOT MOVING
 		else
 		{
+			posPlayer.x -= 3;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+					if (!Game::instance().getKey('c')) bClimbing = true;
+					bGrabbing = false;
+					sprite->changeAnimation(STAND_LEFT);
+				}
+			}
+			posPlayer.x += 3;
+			posPlayer.x += 3;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+					if (!Game::instance().getKey('c')) bClimbing = true;
+					bGrabbing = false;
+					sprite->changeAnimation(STAND_RIGHT);
+				}
+			}
+				posPlayer.x -= 3;
 			if (sprite->animation() == MOVE_LEFT)
 				sprite->changeAnimation(STAND_LEFT);
 			else if (sprite->animation() == MOVE_RIGHT)
@@ -272,95 +180,136 @@ void Player::update(int deltaTime, int level)
 				sprite->changeAnimation(STAND_RIGHT);
 		}
 	}
-	else {
-		if (climbJumpingCount == 15) bClimbJumping = false;
-		else {
-			if (sprite->animation() == JUMP_LEFT) {
-				posPlayer.x -= 3;
-				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) posPlayer.x += 3;
-			}
-			else if (sprite->animation() == JUMP_RIGHT) {
-				posPlayer.x += 3;
-				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) posPlayer.x -= 3;
-			}
-			climbJumpingCount++;
-		}
-	}
-	
-	if(bJumping)
-	{
-		if (bClimbing) {
-			jumpAngle += (JUMP_ANGLE_STEP / 3);
-		}
-		else jumpAngle += JUMP_ANGLE_STEP;
-		if(jumpAngle == 180)
-		{
-			bJumping = false;
-			posPlayer.y = startY;
-		}
-		else
-		{
-			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			if (jumpAngle < 90)
-				if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bJumping = false;
 
-			if (jumpAngle > 90) bJumping = !map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY);
+	// JUMP
+	if (Game::instance().getKey('c') && jumpAngle == 0 && !bClimbJumping) bJumping = true;
+	if (bJumping || bClimbJumping) {
+		jumpAngle += JUMP_ANGLE_STEP;
+		// FIRST HALF OF A JUMP
+		if (jumpAngle <= 90) {
+			if (!bDashing) posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) {
+				bJumping = false;
+				bClimbJumping = false;
+			}
+		}
+		// START TO FALL AFTER THE FIRST HALF
+		else {
+			bJumping = false;
+			bClimbJumping = false;
 		}
 	}
-	else
-	{
-		if (bClimbing) posPlayer.y += (FALL_STEP / 3);
-		else posPlayer.y += FALL_STEP;
-		if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY))
+	else {
+		// FALLING
+		posPlayer.y += FALL_STEP;
+		if (bGrabbing) posPlayer.y += (FALL_STEP / 2);
+		// RESET THE STATE WHEN THE PLAYER TOUCHES THE GROUND
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode))
 		{
 			bClimbing = false;
-			bDash = true;
+			bJumping = false;
+			bDashing = false;
+			bClimbJumping = false;
+			bGrabbing = false;
+			if (!Game::instance().getKey('x')) {
+				bDash = true;
+				//dashFrame = 0;
+				dashAngle = 0;
+			}
+			if (!Game::instance().getKey('c')) jumpAngle = 0;
+			startY = posPlayer.y;
+			dashY = posPlayer.y;
 			if (sprite->animation() == JUMP_RIGHT || sprite->animation() == CLIMB_RIGHT) sprite->changeAnimation(STAND_RIGHT);
 			else if (sprite->animation() == JUMP_LEFT || sprite->animation() == CLIMB_LEFT) sprite->changeAnimation(STAND_LEFT);
-			
-			if (Game::instance().getKey('c'))
-			{
-				bJumping = true;
-				jumpAngle = 0;
-				startY = posPlayer.y;
-				if (sprite->animation() != JUMP_RIGHT && sprite->animation() != JUMP_LEFT) {
-					if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT || sprite->animation() == LOOK_DOWN_LEFT || sprite->animation() == LOOK_UP_LEFT)
-						sprite->changeAnimation(JUMP_LEFT);
-					else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT || sprite->animation() == LOOK_DOWN_RIGHT || sprite->animation() == LOOK_UP_RIGHT)
-						sprite->changeAnimation(JUMP_RIGHT);
+		}
+		if (!bJumping && !bDashing) {
+			// SECOND HALF OF A JUMP
+			if (jumpAngle > 90 && jumpAngle < 180) {
+				jumpAngle += JUMP_ANGLE_STEP;
+				if (!bDashing) posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			}
+			/* A JUMP CAN HAVE MORE THAN 180 DEGREES
+			WHEN THE PLAYER JUMPS TO A PLATFORM THAT IS
+			AT A LOWER HEIGHT */
+			else if (jumpAngle >= 180) {
+				if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+					jumpAngle = 0;
+					if (!bDashing) posPlayer.y = startY;
 				}
 			}
 		}
-		else {
-			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
-				sprite->changeAnimation(JUMP_LEFT);
-			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
-				sprite->changeAnimation(JUMP_RIGHT);
+	}
+
+	// CLIMBJUMPING
+	if (Game::instance().getKey('c') && bClimbing) {
+		bClimbJumping = true;
+		climbJumpingCount = 0;
+		bJumping = false;
+		bClimbing = false;
+		bGrabbing = false;
+		jumpAngle = 0;
+		startY = posPlayer.y;
+		if (sprite->animation() == STAND_LEFT || sprite->animation() == JUMP_LEFT) {
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) posPlayer.x += 3;
+			sprite->changeAnimation(JUMP_RIGHT);
+		}
+		else if (sprite->animation() == STAND_RIGHT || sprite->animation() == JUMP_RIGHT) {
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)))	posPlayer.x -= 3;
+			sprite->changeAnimation(JUMP_LEFT);
 		}
 	}
-	if (bClimbing) {
-		if (Game::instance().getKey('c'))
-		{
-			bClimbJumping = true;
-			bDash = true;
-			climbJumpingCount = 0;
-			bJumping = true;
-			bClimbing = false;
-			jumpAngle = 0;
-			startY = posPlayer.y;
-			if (sprite->animation() != JUMP_RIGHT && sprite->animation() != JUMP_LEFT) {
-				if (sprite->animation() == CLIMB_LEFT) {
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24)))	posPlayer.x += 3;
-					sprite->changeAnimation(JUMP_LEFT);
-				}
-				else if (sprite->animation() == CLIMB_RIGHT) {
-					if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)))	posPlayer.x -= 3;
-					sprite->changeAnimation(JUMP_RIGHT);
-				}
+	if (bClimbJumping) {
+		bGrabbing = false;
+		if (sprite->animation() == JUMP_LEFT) {
+			posPlayer.x -= 3;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
+				posPlayer.x += 3;
+				bClimbing = true;
 			}
 		}
-		else if (!Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !Game::instance().getSpecialKey(GLUT_KEY_LEFT)) bClimbing = false;
+		else if (sprite->animation() == JUMP_RIGHT) {
+			posPlayer.x += 3;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
+				posPlayer.x -= 3;
+				bClimbing = true;
+			}
+		}
 	}
+
+	// DASH
+	if (Game::instance().getKey('x') && dashAngle == 0 && bDash) {
+		bDash = false;
+		bDashing = true;
+		dashY = posPlayer.y;
+	}
+	if (bDashing) {
+		bGrabbing = false;
+		dashAngle += DASH_ANGLE_STEP;
+		// FIRST HALF OF A DASH
+		if (dashAngle <= 90) {
+			posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bDashing = false;
+		}
+		// START TO FALL AFTER THE FIRST HALF
+		else bDashing = false;
+	}
+	else {
+		// SECOND HALF OF A DASH
+		if (dashAngle > 90 && dashAngle < 180) {
+			dashAngle += DASH_ANGLE_STEP;
+			posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+		}
+		/* A DASH CAN HAVE MORE THAN 180 DEGREES
+		WHEN THE PLAYER DASHES TO A PLATFORM THAT IS
+		AT A LOWER HEIGHT */
+		else if (dashAngle >= 180) {
+			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+				dashAngle = 0;
+				posPlayer.y = dashY;
+			}
+		}
+	}
+
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 }
 
