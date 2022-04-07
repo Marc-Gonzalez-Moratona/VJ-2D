@@ -47,46 +47,57 @@ void Scene::update(int deltaTime)
 	if (Game::instance().getKey('1')) { 
 		level = 1; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize());
 	}
 	if (Game::instance().getKey('2')) { 
 		level = 2; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 30 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 30 * map->getTileSize());
 	}
 	if (Game::instance().getKey('3')) { 
 		level = 3; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 48 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 48 * map->getTileSize());
 	}
 	if (Game::instance().getKey('4')) { 
 		level = 4; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 66 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 66 * map->getTileSize());
 	}
 	if (Game::instance().getKey('5')) { 
 		level = 5; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 84 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 84 * map->getTileSize());
 	}
 	if (Game::instance().getKey('6')) { 
 		level = 6; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 102 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 102 * map->getTileSize());
 	}
 	if (Game::instance().getKey('7')) { 
 		level = 7; 
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES+1) * map->getTileSize(), 120 * map->getTileSize()));
+		player->setInitialPosition((INIT_PLAYER_X_TILES + 1) * map->getTileSize(), 120 * map->getTileSize());
 	}
 	if (Game::instance().getKey('8')) { 
 		level = 8; 
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 138 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 138 * map->getTileSize());
 	}
 	if (Game::instance().getKey('9')) { 
 		level = 9; 
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 156 * map->getTileSize()));
+		player->setInitialPosition((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 156 * map->getTileSize());
 	}
 	if (Game::instance().getKey('0')) { 
 		level = 10; 
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES + 1) * map->getTileSize(), 174 * map->getTileSize()));
+		player->setInitialPosition((INIT_PLAYER_X_TILES + 1) * map->getTileSize(), 174 * map->getTileSize());
 	}
 	if (Game::instance().getKey('f')) { 
 		level = 11; 
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 192 * map->getTileSize()));
+		player->setInitialPosition((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 192 * map->getTileSize());
 	}
 
 	glm::mat4 modelview;

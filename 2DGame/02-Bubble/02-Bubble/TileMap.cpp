@@ -180,7 +180,7 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size) 
 	return false;
 }
 
-bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posY) const
+bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posX, int *posY, int initialX, int initialY) const
 {
 	int x0, x1, y;
 	
@@ -189,6 +189,13 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y = (pos.y + size.y - 1) / tileSize;
 	for(int x=x0; x<=x1; x++)
 	{
+		if(map[y*mapSize.x+x] == 4)
+		{
+			//RESET LEVEL WHEN TOUCHING SPIKES
+			*posX = initialX;
+			*posY = initialY;
+			return true;
+		}
 		if(map[y*mapSize.x+x] != 0)
 		{
 			if(*posY - tileSize * y + size.y <= 8)

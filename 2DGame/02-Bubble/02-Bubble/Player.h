@@ -20,11 +20,12 @@ public:
 	
 	void setTileMap(TileMap *tileMap);
 	void setPosition(const glm::vec2 &pos);
+	void setInitialPosition(int X, int Y);
 	
 private:
 	bool bJumping, bClimbing, bClimbJumping, bDash, bDashing, bDashUP, bDashDOWN, bDashLEFT, bDashRIGHT;
 	glm::ivec2 tileMapDispl, posPlayer;
-	int jumpAngle, startY, climbJumpingCount, dashingCount;
+	int jumpAngle, startY, climbJumpingCount, dashingCount, initialX, initialY;
 	Texture spritesheet;
 	Sprite *sprite;
 	TileMap *map;
