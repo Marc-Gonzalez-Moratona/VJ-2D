@@ -20,6 +20,7 @@ TileMap::TileMap(const string &levelFile, const glm::vec2 &minCoords, ShaderProg
 {
 	loadLevel(levelFile);
 	prepareArrays(minCoords, program);
+	nextLevel = false;
 }
 
 TileMap::~TileMap()
@@ -222,7 +223,7 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 }
 
 
-bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int* posY) const
+bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int* posY)
 {
 	int y, x0, x1;
 
@@ -231,6 +232,7 @@ bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int
 	y = pos.y / tileSize;
 	for (int x = x0; x <= x1; x++)
 	{
+		if (map[y * mapSize.x + x] == 56) nextLevel = true;
 		if (map[y * mapSize.x+x] != 0)
 		{
 			if (*posY - tileSize * (y+1) <= 8)
@@ -242,6 +244,16 @@ bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int
 	}
 
 	return false;
+}
+
+bool TileMap::goNextLevel()
+{
+	if (nextLevel)
+	{
+		nextLevel = false;
+		return true;
+	}
+	else return false;
 }
 
 

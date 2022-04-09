@@ -36,6 +36,7 @@ private:
 	glm::mat4 modelview;
 	glm::vec3 mapposition;
 	int level;
+	bool nextLevel;
 };
 
 
