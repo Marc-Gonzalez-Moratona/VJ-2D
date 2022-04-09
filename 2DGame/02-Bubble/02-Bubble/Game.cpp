@@ -6,21 +6,28 @@
 void Game::init()
 {
 	bPlay = true;
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	id = 0;
+	glClearColor(0.f, 0.f, 0.f, 1.0f);
+	menu.init();
+}
+
+void Game::start() {
 	scene.init();
+	id = 6;
 }
 
 bool Game::update(int deltaTime)
 {
-	scene.update(deltaTime);
-	
+	if(id==0) menu.update(deltaTime);
+	else if(id==6) scene.update(deltaTime);
 	return bPlay;
 }
 
 void Game::render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	scene.render();
+	if (id == 0) menu.render();
+	else if (id == 6) scene.render();
 }
 
 void Game::keyPressed(int key)
@@ -66,8 +73,5 @@ bool Game::getSpecialKey(int key) const
 {
 	return specialKeys[key];
 }
-
-
-
 
 

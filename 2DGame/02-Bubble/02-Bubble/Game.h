@@ -3,7 +3,7 @@
 
 
 #include "Scene.h"
-
+#include "Menu.h"
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -29,6 +29,7 @@ public:
 	void init();
 	bool update(int deltaTime);
 	void render();
+	void start();
 	
 	// Input callback methods
 	void keyPressed(int key);
@@ -44,10 +45,11 @@ public:
 
 private:
 	bool bPlay;                       // Continue to play game?
-	Scene scene;                      // Scene to render
 	bool keys[256], specialKeys[256]; // Store key states so that 
 	                                  // we can have access at any time
-
+	Scene scene;                     // Scene to render
+	Menu menu;
+	int id;
 };
 
 

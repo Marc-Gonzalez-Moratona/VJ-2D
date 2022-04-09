@@ -48,17 +48,6 @@ void Scene::render()
 {
 	glm::mat4 modelview;
 
-	simpleProgram.use();
-	simpleProgram.setUniformMatrix4f("projection", projection);
-	simpleProgram.setUniform4f("color", 0.2f, 0.2f, 0.8f, 1.0f);
-
-	modelview = glm::translate(glm::mat4(1.0f), glm::vec3(128.f, 48.f, 0.f));
-	modelview = glm::translate(modelview, glm::vec3(64.f, 64.f, 0.f));
-	modelview = glm::rotate(modelview, -currentTime / 1000.f, glm::vec3(0.0f, 0.0f, 1.0f));
-	modelview = glm::translate(modelview, glm::vec3(-64.f, -64.f, 0.f));
-	simpleProgram.setUniformMatrix4f("modelview", modelview);
-	quad->render();
-
 	texProgram.use();
 	texProgram.setUniformMatrix4f("projection", projection);
 	texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);

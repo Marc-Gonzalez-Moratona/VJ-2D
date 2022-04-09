@@ -6,6 +6,7 @@
 #include "ShaderProgram.h"
 #include "TileMap.h"
 #include "Player.h"
+#include "TexturedQuad.h"
 
 
 // Scene contains all the entities of our game.
@@ -35,7 +36,6 @@ private:
 	glm::mat4 modelview;
 	glm::vec3 mapposition;
 	int level;
-
 };
 
 
