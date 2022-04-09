@@ -29,7 +29,7 @@ private:
 	Texture spritesheet;
 	Sprite* sprite;
 	TileMap* map;
-	bool bGodMode, bSlowMode, bDashMode;
+	bool bGodMode, bSlowMode, bDashMode, bChanging;
 
 };
 

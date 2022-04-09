@@ -10,7 +10,7 @@
 #define JUMP_HEIGHT 64
 #define FALL_STEP 4
 #define DASH_ANGLE_STEP 4
-#define DASH_HEIGHT 96
+#define DASH_HEIGHT 80
 
 enum PlayerAnims
 {
@@ -30,6 +30,7 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	bDashMode = false;
 	bSlowMode = false;
 	bGrabbing = false;
+	bChanging = false;
 	dashDirection = 0;
 	setInitialPosition(24, 12 * 24);
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
@@ -87,9 +88,21 @@ void Player::update(int deltaTime, int level)
 {
 	tileMapDispl.y = 25 - 432 * (level - 1);
 	sprite->update(deltaTime);
-	if (Game::instance().getKey('g')) bGodMode = !bGodMode;
-	if (Game::instance().getKey('d')) bDashMode = !bDashMode;
-	if (Game::instance().getKey('s')) bSlowMode = !bSlowMode;
+	if (!Game::instance().getKey('g') && !Game::instance().getKey('d') && !Game::instance().getKey('s')) bChanging = false;
+	if (!bChanging){
+		if (Game::instance().getKey('g')) {
+			bGodMode = !bGodMode;
+			bChanging = true;
+		}
+		if (Game::instance().getKey('d')) {
+			bDashMode = !bDashMode;
+			bChanging = true;
+		}
+		if (Game::instance().getKey('s')) {
+			bSlowMode = !bSlowMode;
+			bChanging = true;
+		}
+	}
 	
 	// JUMP
 	if (Game::instance().getKey('c') && jumpAngle == 0) {
