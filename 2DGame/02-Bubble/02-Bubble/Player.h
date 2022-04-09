@@ -14,21 +14,21 @@ class Player
 {
 
 public:
-	void init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram);
+	void init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram);
 	void update(int deltaTime, int level);
 	void render();
-	
-	void setTileMap(TileMap *tileMap);
-	void setPosition(const glm::vec2 &pos);
+
+	void setTileMap(TileMap* tileMap);
+	void setPosition(const glm::vec2& pos);
 	void setInitialPosition(int X, int Y);
-	
+
 private:
-	bool bJumping, bClimbing, bClimbJumping, bDash, bDashing, bDashUP, bDashDOWN, bDashLEFT, bDashRIGHT, bGrabbing;
+	bool bJumping, bClimbing, bClimbJumping, bDashing, bGrabbing;
 	glm::ivec2 tileMapDispl, posPlayer;
-	int jumpAngle, dashAngle, startY, climbJumpingCount, dashingCount, initialX, initialY, dashDirection, dashFrame, dashY;
+	int jumpAngle, climbJumpAngle, dashAngle, startY, initialX, initialY, dashDirection, dashY;
 	Texture spritesheet;
-	Sprite *sprite;
-	TileMap *map;
+	Sprite* sprite;
+	TileMap* map;
 	bool bGodMode, bSlowMode, bDashMode;
 
 };

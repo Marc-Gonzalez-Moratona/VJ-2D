@@ -1,10 +1,17 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "Game.h"
+#include <iostream>
 
+using namespace std;
 
 void Game::init()
 {
+	// DEBUG CONSOLE
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+
+	// INIT VARIABLES
 	bPlay = true;
 	id = 0;
 	glClearColor(0.f, 0.f, 0.f, 1.0f);
