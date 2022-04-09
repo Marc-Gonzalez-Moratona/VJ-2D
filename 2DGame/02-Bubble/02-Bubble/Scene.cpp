@@ -54,8 +54,8 @@ void Scene::update(int deltaTime)
 	}
 	if (Game::instance().getKey('2')) {
 		level = 2;
-		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 30 * map->getTileSize()));
-		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 30 * map->getTileSize());
+		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 32 * map->getTileSize()));
+		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 32 * map->getTileSize());
 	}
 	if (Game::instance().getKey('3')) {
 		level = 3;

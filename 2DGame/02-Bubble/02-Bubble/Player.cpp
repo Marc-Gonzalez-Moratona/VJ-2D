@@ -7,10 +7,10 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 60
+#define JUMP_HEIGHT 64
 #define FALL_STEP 4
 #define DASH_ANGLE_STEP 4
-#define DASH_HEIGHT 68
+#define DASH_HEIGHT 96
 
 enum PlayerAnims
 {
@@ -99,90 +99,17 @@ void Player::update(int deltaTime, int level)
 	if (Game::instance().getKey('d')) bDashMode = !bDashMode;
 	if (Game::instance().getKey('s')) bSlowMode = !bSlowMode;
 
-	// WALK
-	if (bDash || dashAngle > 60) {
-		// MOVE LEFT
-		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping)
-		{
-			posPlayer.x -= 3;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-				posPlayer.x += 3;
-				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
-					if(!Game::instance().getKey('c')) bClimbing = true;
-					bGrabbing = true;
-					sprite->changeAnimation(CLIMB_RIGHT);
-				}
-			}
-			else if (sprite->animation() != MOVE_LEFT) sprite->changeAnimation(MOVE_LEFT);
-		}
-		// MOVE RIGHT
-		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping)
-		{
-			posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
-				posPlayer.x -= 3;
-				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
-					if (!Game::instance().getKey('c')) bClimbing = true;
-					bGrabbing = true;
-					sprite->changeAnimation(CLIMB_LEFT);
-				}
-			}
-			else if (sprite->animation() != MOVE_RIGHT) sprite->changeAnimation(MOVE_RIGHT);
-		}
-		// LOOK DOWN
-		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
-		{
-			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
-				sprite->changeAnimation(LOOK_DOWN_LEFT);
-			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
-				sprite->changeAnimation(LOOK_DOWN_RIGHT);
-		}
-		// LOOK UP
-		else if (Game::instance().getSpecialKey(GLUT_KEY_UP))
-		{
-			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
-				sprite->changeAnimation(LOOK_UP_LEFT);
-			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
-				sprite->changeAnimation(LOOK_UP_RIGHT);
-		}
-		// NOT MOVING
-		else
-		{
-			posPlayer.x -= 3;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
-				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
-					if (!Game::instance().getKey('c')) bClimbing = true;
-					bGrabbing = false;
-					sprite->changeAnimation(STAND_LEFT);
-				}
-			}
-			posPlayer.x += 3;
-			posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
-				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
-					if (!Game::instance().getKey('c')) bClimbing = true;
-					bGrabbing = false;
-					sprite->changeAnimation(STAND_RIGHT);
-				}
-			}
-				posPlayer.x -= 3;
-			if (sprite->animation() == MOVE_LEFT)
-				sprite->changeAnimation(STAND_LEFT);
-			else if (sprite->animation() == MOVE_RIGHT)
-				sprite->changeAnimation(STAND_RIGHT);
-			else if (sprite->animation() == LOOK_DOWN_LEFT)
-				sprite->changeAnimation(STAND_LEFT);
-			else if (sprite->animation() == LOOK_DOWN_RIGHT)
-				sprite->changeAnimation(STAND_RIGHT);
-			else if (sprite->animation() == LOOK_UP_LEFT)
-				sprite->changeAnimation(STAND_LEFT);
-			else if (sprite->animation() == LOOK_UP_RIGHT)
-				sprite->changeAnimation(STAND_RIGHT);
+	
+	// JUMP
+	if (Game::instance().getKey('c') && jumpAngle == 0 && !bClimbJumping) {
+		if (sprite->animation() == STAND_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
+		else if (sprite->animation() == STAND_LEFT) sprite->changeAnimation(JUMP_LEFT);
+		posPlayer.y += 3;
+		if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+			bJumping = true;
+			posPlayer.y -= 3;
 		}
 	}
-
-	// JUMP
-	if (Game::instance().getKey('c') && jumpAngle == 0 && !bClimbJumping) bJumping = true;
 	if (bJumping || bClimbJumping) {
 		jumpAngle += JUMP_ANGLE_STEP;
 		// FIRST HALF OF A JUMP
@@ -201,8 +128,8 @@ void Player::update(int deltaTime, int level)
 	}
 	else {
 		// FALLING
-		posPlayer.y += FALL_STEP;
 		if (bGrabbing) posPlayer.y += (FALL_STEP / 2);
+		else posPlayer.y += FALL_STEP;
 		// RESET THE STATE WHEN THE PLAYER TOUCHES THE GROUND
 		if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode))
 		{
@@ -224,10 +151,7 @@ void Player::update(int deltaTime, int level)
 		}
 		if (!bJumping && !bDashing) {
 			// SECOND HALF OF A JUMP
-			if (jumpAngle > 90 && jumpAngle < 180) {
-				jumpAngle += JUMP_ANGLE_STEP;
-				if (!bDashing) posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			}
+			if (jumpAngle > 90 && jumpAngle < 180) jumpAngle += JUMP_ANGLE_STEP;
 			/* A JUMP CAN HAVE MORE THAN 180 DEGREES
 			WHEN THE PLAYER JUMPS TO A PLATFORM THAT IS
 			AT A LOWER HEIGHT */
@@ -241,7 +165,7 @@ void Player::update(int deltaTime, int level)
 	}
 
 	// CLIMBJUMPING
-	if (Game::instance().getKey('c') && bClimbing) {
+	if (Game::instance().getKey('c') && bClimbing && !bJumping) {
 		bClimbJumping = true;
 		climbJumpingCount = 0;
 		bJumping = false;
@@ -307,6 +231,84 @@ void Player::update(int deltaTime, int level)
 				dashAngle = 0;
 				posPlayer.y = dashY;
 			}
+		}
+	}
+
+	// WALK
+	if (bDash || dashAngle > 60) {
+		// MOVE LEFT
+		if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping)
+		{
+			posPlayer.x -= 3;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24))) {
+				posPlayer.x += 3;
+				if (bClimbing) {
+					bGrabbing = true;
+					sprite->changeAnimation(CLIMB_RIGHT);
+				}
+				else if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) bClimbing = true;
+			}
+			else if (sprite->animation() != MOVE_LEFT) {
+				sprite->changeAnimation(MOVE_LEFT);
+				bGrabbing = false;
+			}
+		}
+		// MOVE RIGHT
+		else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping)
+		{
+			posPlayer.x += 3;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24))) {
+				posPlayer.x -= 3;
+				if (bClimbing) {
+					bGrabbing = true;
+					sprite->changeAnimation(CLIMB_LEFT);
+				}
+				else if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) bClimbing = true;
+			}
+			else if (sprite->animation() != MOVE_RIGHT) {
+				sprite->changeAnimation(MOVE_RIGHT);
+				bGrabbing = false;
+			}
+		}
+		// LOOK DOWN
+		else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN))
+		{
+			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
+				sprite->changeAnimation(LOOK_DOWN_LEFT);
+			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
+				sprite->changeAnimation(LOOK_DOWN_RIGHT);
+		}
+		// LOOK UP
+		else if (Game::instance().getSpecialKey(GLUT_KEY_UP))
+		{
+			if (sprite->animation() == STAND_LEFT || sprite->animation() == MOVE_LEFT)
+				sprite->changeAnimation(LOOK_UP_LEFT);
+			else if (sprite->animation() == STAND_RIGHT || sprite->animation() == MOVE_RIGHT)
+				sprite->changeAnimation(LOOK_UP_RIGHT);
+		}
+		// NOT MOVING
+		else
+		{
+			bGrabbing = false;
+			if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
+				posPlayer.x += 3;
+				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24)) && !Game::instance().getKey('c')) bClimbing = true;
+				posPlayer.x -= 6;
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24)) && !Game::instance().getKey('c')) bClimbing = true;
+				posPlayer.x += 3;
+			}
+			if (sprite->animation() == MOVE_LEFT || sprite->animation() == CLIMB_RIGHT)
+				sprite->changeAnimation(STAND_LEFT);
+			else if (sprite->animation() == MOVE_RIGHT || sprite->animation() == CLIMB_LEFT)
+				sprite->changeAnimation(STAND_RIGHT);
+			else if (sprite->animation() == LOOK_DOWN_LEFT)
+				sprite->changeAnimation(STAND_LEFT);
+			else if (sprite->animation() == LOOK_DOWN_RIGHT)
+				sprite->changeAnimation(STAND_RIGHT);
+			else if (sprite->animation() == LOOK_UP_LEFT)
+				sprite->changeAnimation(STAND_LEFT);
+			else if (sprite->animation() == LOOK_UP_RIGHT)
+				sprite->changeAnimation(STAND_RIGHT);
 		}
 	}
 
