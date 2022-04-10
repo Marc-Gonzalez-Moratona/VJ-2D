@@ -226,7 +226,7 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 	if (bClimbing && !bClimbJumping && !Game::instance().getKey('c')) climbJumpAngle = 0;
-
+	if (bDashMode) bDashing = false;
 	// DASH
 	if (Game::instance().getKey('x') && !bDashing && dashAngle == 0) {
 		bDashing = true;
@@ -321,7 +321,7 @@ void Player::update(int deltaTime, int level)
 
 	// WALK
 	// MOVE LEFT
-	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && !bDashing)
+	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection == 6)))
 	{
 		posPlayer.x -= 3;
 		if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
@@ -340,7 +340,7 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 	// MOVE RIGHT
-	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping && !bDashing)
+	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection == 6)))
 	{
 		posPlayer.x += 3;
 		if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
