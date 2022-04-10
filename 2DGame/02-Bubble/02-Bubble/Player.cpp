@@ -9,18 +9,18 @@
 #define JUMP_ANGLE_STEP 4
 #define JUMP_HEIGHT 64
 #define FALL_STEP 4
-#define DASH_ANGLE_STEP 4
-#define DASH_HEIGHT 64
+#define DASH_ANGLE_STEP 12
+#define DASH_HEIGHT 72
 
 enum PlayerAnims
 {
-	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT, 
+	STAND_LEFT, STAND_RIGHT, MOVE_LEFT, MOVE_RIGHT,
 	LOOK_DOWN_LEFT, LOOK_DOWN_RIGHT, LOOK_UP_LEFT, LOOK_UP_RIGHT,
 	JUMP_LEFT, JUMP_RIGHT, CLIMB_LEFT, CLIMB_RIGHT
 };
 
 
-void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
+void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 {
 	bJumping = false;
 	bClimbing = false;
@@ -36,74 +36,81 @@ void Player::init(const glm::ivec2 &tileMapPos, ShaderProgram &shaderProgram)
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
 	sprite->setNumberAnimations(12);
-	
-		sprite->setAnimationSpeed(STAND_LEFT, 8);
-		sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
-		
-		sprite->setAnimationSpeed(STAND_RIGHT, 8);
-		sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
-		
-		sprite->setAnimationSpeed(MOVE_LEFT, 8);
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.25f));
-		sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.5f));
-		
-		sprite->setAnimationSpeed(MOVE_RIGHT, 8);
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.25f));
-		sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.5f));
 
-		sprite->setAnimationSpeed(LOOK_DOWN_LEFT, 8);
-		sprite->addKeyframe(LOOK_DOWN_LEFT, glm::vec2(0.5f, 0.f));
+	sprite->setAnimationSpeed(STAND_LEFT, 8);
+	sprite->addKeyframe(STAND_LEFT, glm::vec2(0.f, 0.f));
 
-		sprite->setAnimationSpeed(LOOK_DOWN_RIGHT, 8);
-		sprite->addKeyframe(LOOK_DOWN_RIGHT, glm::vec2(0.75f, 0.f));
+	sprite->setAnimationSpeed(STAND_RIGHT, 8);
+	sprite->addKeyframe(STAND_RIGHT, glm::vec2(0.25f, 0.f));
 
-		sprite->setAnimationSpeed(LOOK_UP_LEFT, 8);
-		sprite->addKeyframe(LOOK_UP_LEFT, glm::vec2(0.5f, 0.25f));
+	sprite->setAnimationSpeed(MOVE_LEFT, 8);
+	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.f));
+	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.25f));
+	sprite->addKeyframe(MOVE_LEFT, glm::vec2(0.f, 0.5f));
 
-		sprite->setAnimationSpeed(LOOK_UP_RIGHT, 8);
-		sprite->addKeyframe(LOOK_UP_RIGHT, glm::vec2(0.75f, 0.25f));
+	sprite->setAnimationSpeed(MOVE_RIGHT, 8);
+	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.f));
+	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.25f));
+	sprite->addKeyframe(MOVE_RIGHT, glm::vec2(0.25f, 0.5f));
 
-		sprite->setAnimationSpeed(JUMP_LEFT, 8);
-		sprite->addKeyframe(JUMP_LEFT, glm::vec2(0.f, 0.75f));
+	sprite->setAnimationSpeed(LOOK_DOWN_LEFT, 8);
+	sprite->addKeyframe(LOOK_DOWN_LEFT, glm::vec2(0.5f, 0.f));
 
-		sprite->setAnimationSpeed(JUMP_RIGHT, 8);
-		sprite->addKeyframe(JUMP_RIGHT, glm::vec2(0.25f, 0.75f));
+	sprite->setAnimationSpeed(LOOK_DOWN_RIGHT, 8);
+	sprite->addKeyframe(LOOK_DOWN_RIGHT, glm::vec2(0.75f, 0.f));
 
-		sprite->setAnimationSpeed(CLIMB_LEFT, 8);
-		sprite->addKeyframe(CLIMB_LEFT, glm::vec2(0.5f, 0.5f));
+	sprite->setAnimationSpeed(LOOK_UP_LEFT, 8);
+	sprite->addKeyframe(LOOK_UP_LEFT, glm::vec2(0.5f, 0.25f));
 
-		sprite->setAnimationSpeed(CLIMB_RIGHT, 8);
-		sprite->addKeyframe(CLIMB_RIGHT, glm::vec2(0.75f, 0.5f));
-		
+	sprite->setAnimationSpeed(LOOK_UP_RIGHT, 8);
+	sprite->addKeyframe(LOOK_UP_RIGHT, glm::vec2(0.75f, 0.25f));
+
+	sprite->setAnimationSpeed(JUMP_LEFT, 8);
+	sprite->addKeyframe(JUMP_LEFT, glm::vec2(0.f, 0.75f));
+
+	sprite->setAnimationSpeed(JUMP_RIGHT, 8);
+	sprite->addKeyframe(JUMP_RIGHT, glm::vec2(0.25f, 0.75f));
+
+	sprite->setAnimationSpeed(CLIMB_LEFT, 8);
+	sprite->addKeyframe(CLIMB_LEFT, glm::vec2(0.5f, 0.5f));
+
+	sprite->setAnimationSpeed(CLIMB_RIGHT, 8);
+	sprite->addKeyframe(CLIMB_RIGHT, glm::vec2(0.75f, 0.5f));
+
 	sprite->changeAnimation(1);
-	tileMapDispl = tileMapPos; 
+	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
-	
-}
 
+}
 
 void Player::update(int deltaTime, int level)
 {
 	tileMapDispl.y = 25 - 432 * (level - 1);
 	sprite->update(deltaTime);
 	if (!Game::instance().getKey('g') && !Game::instance().getKey('d') && !Game::instance().getKey('s')) bChanging = false;
-	if (!bChanging){
+	if (!bChanging) {
 		if (Game::instance().getKey('g')) {
 			bGodMode = !bGodMode;
+			if (bGodMode) cout << "God mode enabled" << endl;
+			else cout << "God mode disabled" << endl;
 			bChanging = true;
 		}
 		if (Game::instance().getKey('d')) {
 			bDashMode = !bDashMode;
+			if (bDashMode) cout << "Dash mode enabled" << endl;
+			else cout << "Dash mode disabled" << endl;
 			bChanging = true;
 		}
 		if (Game::instance().getKey('s')) {
 			bSlowMode = !bSlowMode;
-			bChanging = true;
+			if (bSlowMode) cout << "Slow mode enabled" << endl;
+			else cout << "Slow mode disabled" << endl;		bChanging = true;
 		}
 	}
-	
+
+	// Clear console using back key
+	if (Game::instance().getKey(8)) system("CLS");
+
 	// JUMP
 	if (Game::instance().getKey('c') && jumpAngle == 0) {
 		if (map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
@@ -113,7 +120,23 @@ void Player::update(int deltaTime, int level)
 			bJumping = true;
 		}
 	}
+
 	if (bClimbJumping) {
+		bGrabbing = false;
+		if (sprite->animation() == JUMP_LEFT) {
+			posPlayer.x -= 3;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+				posPlayer.x += 3;
+				bClimbing = true;
+			}
+		}
+		else if (sprite->animation() == JUMP_RIGHT) {
+			posPlayer.x += 3;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+				posPlayer.x -= 3;
+				bClimbing = true;
+			}
+		}
 		climbJumpAngle += JUMP_ANGLE_STEP;
 		// FIRST HALF OF A CLIMBJUMP
 		if (climbJumpAngle <= 75) {
@@ -146,6 +169,7 @@ void Player::update(int deltaTime, int level)
 			}
 		}
 	}
+
 	if (bJumping) {
 		jumpAngle += JUMP_ANGLE_STEP;
 		// FIRST HALF OF A JUMP
@@ -159,7 +183,7 @@ void Player::update(int deltaTime, int level)
 	else {
 		// FALLING
 		if (bGrabbing) posPlayer.y += (FALL_STEP / 2);
-		else if(!bDashing || (bDashing && dashAngle >= 60)) posPlayer.y += FALL_STEP;
+		else if (!bDashing || (bDashing && dashAngle >= 60)) posPlayer.y += FALL_STEP;
 		if (sprite->animation() == STAND_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
 		else if (sprite->animation() == STAND_LEFT) sprite->changeAnimation(JUMP_LEFT);
 		// RESET THE STATE WHEN THE PLAYER TOUCHES THE GROUND
@@ -208,27 +232,20 @@ void Player::update(int deltaTime, int level)
 			sprite->changeAnimation(JUMP_LEFT);
 		}
 	}
-	if (bClimbJumping) {
-		bGrabbing = false;
-		if (sprite->animation() == JUMP_LEFT ) {
-			posPlayer.x -= 3;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-				posPlayer.x += 3;
-				bClimbing = true;
-			}
-		}
-		else if (sprite->animation() == JUMP_RIGHT) {
-			posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-				posPlayer.x -= 3;
-				bClimbing = true;
-			}
-		}
-	}
+
 	if (bClimbing && !bClimbJumping && !Game::instance().getKey('c')) climbJumpAngle = 0;
-	if (bDashMode) bDashing = false;
+
+	if (bClimbing) cout << "Climbing" << endl;
+	if (bJumping) cout << "Jumping" << endl;
+	if (bClimbJumping) cout << "ClimbJumping" << endl;
+	if (bDashing) cout << "Dashing" << endl;
+	if (bGrabbing) cout << "Grabbing" << endl;
+
+	if (Game::instance().getKey('x')) cout << dashAngle << endl;
+
 	// DASH
-	if (Game::instance().getKey('x') && !bDashing && dashAngle == 0) {
+	if (Game::instance().getKey('x') && (!bDashing || bDashMode) && dashAngle == 0) {
+		cout << "Dash detected" << endl;
 		bDashing = true;
 		dashY = posPlayer.y;
 		if (sprite->animation() == STAND_LEFT || sprite->animation() == CLIMB_RIGHT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);
@@ -248,89 +265,88 @@ void Player::update(int deltaTime, int level)
 		else if (sprite->animation() == STAND_LEFT || sprite->animation() == JUMP_LEFT || sprite->animation() == CLIMB_RIGHT) dashDirection = 4;
 		else if (sprite->animation() == STAND_RIGHT || sprite->animation() == JUMP_RIGHT || sprite->animation() == CLIMB_LEFT) dashDirection = 0;
 	}
+
 	if (bDashing) {
-		if(dashAngle < 180) {
+		if ((!bDashMode && dashAngle < 90) || (bDashMode && dashAngle < 60)) {
 			bGrabbing = false;
-			dashAngle += DASH_ANGLE_STEP;
+			dashAngle += DASH_ANGLE_STEP / 2;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) bDashing = false;
 			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bDashing = false;
 			switch (dashDirection) {
-				case 0:
-					posPlayer.x += 3;
-					if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x -= 3;
-						bDashing = false;
-					}
-					break;
-				case 1:
-					posPlayer.x += 3;
-					if (map->collisionMoveRight(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x -= 3;
-						bDashing = false;
-					}
-					if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				case 2:
-					if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode))posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				case 3:
-					posPlayer.x -= 3;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x += 3;
-						bDashing = false;
-					}
-					if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				case 4:
-					posPlayer.x -= 3;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x += 3;
-						bDashing = false;
-					}
-					break;
-				case 5:
-					posPlayer.x -= 3;
-					if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x += 3;
-						bDashing = false;
-					}
-					posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				case 6:
-					posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				case 7:
-					posPlayer.x += 3;
-					if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
-						posPlayer.x -= 3;
-						bDashing = false;
-					}
-					posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
-					break;
-				default: 
-					break;
+			case 0:
+				posPlayer.x += 4;
+				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x -= 4;
+					bDashing = false;
+				}
+				break;
+			case 1:
+				posPlayer.x += 4;
+				if (map->collisionMoveRight(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x -= 4;
+					bDashing = false;
+				}
+				if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			case 2:
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode))posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			case 3:
+				posPlayer.x -= 4;
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x += 4;
+					bDashing = false;
+				}
+				if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) posPlayer.y = int(dashY + DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			case 4:
+				posPlayer.x -= 4;
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x += 4;
+					bDashing = false;
+				}
+				break;
+			case 5:
+				posPlayer.x -= 4;
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x += 4;
+					bDashing = false;
+				}
+				posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			case 6:
+				posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			case 7:
+				posPlayer.x += 4;
+				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+					posPlayer.x -= 4;
+					bDashing = false;
+				}
+				posPlayer.y = int(dashY - DASH_HEIGHT * sin(3.14159f * dashAngle / 180.f));
+				break;
+			default:
+				break;
 			}
 		}
-		else {
-			bDashing = false;
-			dashAngle = 0;
-		}
+		else bDashing = false;
 	}
-	else dashAngle = 0;
-	
+	else if (bDashMode) dashAngle = 0;
+	else if (!bJumping && !bClimbing && !bGrabbing && map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('x')) dashAngle = 0;
+
 
 	// WALK
 	// MOVE LEFT
-	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection == 6)))
+	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection != 4 && dashDirection != 0)))
 	{
 		posPlayer.x -= 3;
 		if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
 			posPlayer.x += 3;
-			if (bClimbing) {
+			if (bClimbing && !bDashMode) {
 				bGrabbing = true;
 				sprite->changeAnimation(CLIMB_RIGHT);
 			}
-			else if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) {
+			else if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) {
 				bClimbing = true;
 			}
 		}
@@ -340,16 +356,16 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 	// MOVE RIGHT
-	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection == 6)))
+	else if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection != 4 && dashDirection != 0)))
 	{
 		posPlayer.x += 3;
 		if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
 			posPlayer.x -= 3;
-			if (bClimbing) {
+			if (bClimbing && !bDashMode) {
 				bGrabbing = true;
 				sprite->changeAnimation(CLIMB_LEFT);
 			}
-			else if (!map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) {
+			else if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode) && !Game::instance().getKey('c')) {
 				bClimbing = true;
 			}
 		}
@@ -411,12 +427,12 @@ void Player::render()
 	sprite->render();
 }
 
-void Player::setTileMap(TileMap *tileMap)
+void Player::setTileMap(TileMap* tileMap)
 {
 	map = tileMap;
 }
 
-void Player::setPosition(const glm::vec2 &pos)
+void Player::setPosition(const glm::vec2& pos)
 {
 	posPlayer = pos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
