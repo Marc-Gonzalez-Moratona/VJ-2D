@@ -30,9 +30,9 @@ public:
 	
 	int getTileSize() const { return tileSize; }
 
-	bool collisionMoveLeft(const glm::ivec2& pos, const glm::ivec2& size, int* posX, int displacement) const;
-	bool collisionMoveRight(const glm::ivec2& pos, const glm::ivec2& size, int* posX, int displacement) const;
-	bool collisionMoveUp(const glm::ivec2 &pos, const glm::ivec2 &size, int* posY);
+	bool collisionMoveLeft(const glm::ivec2& pos, const glm::ivec2& size, int* posX, int* posY, int initialX, int initialY, bool bGodMode, int displacement) const;
+	bool collisionMoveRight(const glm::ivec2& pos, const glm::ivec2& size, int* posX, int* posY, int initialX, int initialY, bool bGodMode, int displacement) const;
+	bool collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int* posX, int* posY, int initialX, int initialY, bool bGodMode);
 	bool collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, int *posX, int *posY, int initialX, int initialY, bool bGodMode) const;
 
 	void changeLevel(int level);

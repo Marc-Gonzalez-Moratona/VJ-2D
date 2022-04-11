@@ -126,7 +126,7 @@ void Player::update(int deltaTime, int level)
 		if (sprite->animation() == JUMP_LEFT) {
 			if (bSlowMode) posPlayer.x -= 2;
 			else posPlayer.x -= 3;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) {
 				if (bSlowMode) posPlayer.x += 2;
 				else posPlayer.x += 3;
 				bClimbing = true;
@@ -135,7 +135,7 @@ void Player::update(int deltaTime, int level)
 		else if (sprite->animation() == JUMP_RIGHT) {
 			if (bSlowMode) posPlayer.x += 2;
 			else posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) {
 				if (bSlowMode) posPlayer.x -= 2;
 				else posPlayer.x -= 3;
 				bClimbing = true;
@@ -146,7 +146,7 @@ void Player::update(int deltaTime, int level)
 		// FIRST HALF OF A CLIMBJUMP
 		if (climbJumpAngle <= 75) {
 			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * climbJumpAngle / 180.f));
-			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bClimbJumping = false;
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) bClimbJumping = false;
 		}
 		// START TO FALL AFTER THE FIRST HALF
 		else bClimbJumping = false;
@@ -181,7 +181,7 @@ void Player::update(int deltaTime, int level)
 		// FIRST HALF OF A JUMP
 		if (jumpAngle <= 90) {
 			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bJumping = false;
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) bJumping = false;
 		}
 		// START TO FALL AFTER THE FIRST HALF
 		else bJumping = false;
@@ -239,11 +239,11 @@ void Player::update(int deltaTime, int level)
 		bGrabbing = false;
 		startY = posPlayer.y;
 		if (sprite->animation() == STAND_LEFT || sprite->animation() == JUMP_LEFT || sprite->animation() == CLIMB_RIGHT) {
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) posPlayer.x += 3;
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) posPlayer.x += 3;
 			sprite->changeAnimation(JUMP_RIGHT);
 		}
 		else if (sprite->animation() == STAND_RIGHT || sprite->animation() == JUMP_RIGHT || sprite->animation() == CLIMB_LEFT) {
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) posPlayer.x -= 3;
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) posPlayer.x -= 3;
 			sprite->changeAnimation(JUMP_LEFT);
 		}
 	}
@@ -287,12 +287,12 @@ void Player::update(int deltaTime, int level)
 			if (bSlowMode) dashAngle += DASH_ANGLE_STEP / 4;
 			else dashAngle += DASH_ANGLE_STEP / 2;
 			if (map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) bDashing = false;
-			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bDashing = false;
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) bDashing = false;
 			switch (dashDirection) {
 			case 0:
 				if (bSlowMode) posPlayer.x += 2;
 				else posPlayer.x += 4;
-				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x -= 2;
 					else posPlayer.x -= 4;
 					bDashing = false;
@@ -301,7 +301,7 @@ void Player::update(int deltaTime, int level)
 			case 1:
 				if (bSlowMode) posPlayer.x += 2;
 				else posPlayer.x += 4;
-				if (map->collisionMoveRight(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveRight(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x -= 2;
 					else posPlayer.x -= 4;
 					bDashing = false;
@@ -314,7 +314,7 @@ void Player::update(int deltaTime, int level)
 			case 3:
 				if (bSlowMode) posPlayer.x -= 2;
 				else posPlayer.x -= 4;
-				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x += 2;
 					else posPlayer.x += 4;
 					bDashing = false;
@@ -324,7 +324,7 @@ void Player::update(int deltaTime, int level)
 			case 4:
 				if (bSlowMode) posPlayer.x -= 2;
 				else posPlayer.x -= 4;
-				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x += 2;
 					else posPlayer.x += 4;
 					bDashing = false;
@@ -333,7 +333,7 @@ void Player::update(int deltaTime, int level)
 			case 5:
 				if (bSlowMode) posPlayer.x -= 2;
 				else posPlayer.x -= 4;
-				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x += 2;
 					else posPlayer.x += 4;
 					bDashing = false;
@@ -346,7 +346,7 @@ void Player::update(int deltaTime, int level)
 			case 7:
 				if (bSlowMode) posPlayer.x += 2;
 				else posPlayer.x += 4;
-				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 4)) {
+				if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 4)) {
 					if (bSlowMode) posPlayer.x -= 2;
 					else posPlayer.x -= 4;
 					bDashing = false;
@@ -369,7 +369,7 @@ void Player::update(int deltaTime, int level)
 	{
 		if (bSlowMode) posPlayer.x -= 2;
 		else posPlayer.x -= 3;
-		if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+		if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) {
 			if (bSlowMode) posPlayer.x += 2;
 			else posPlayer.x += 3;
 			if (bClimbing && !bDashMode) {
@@ -390,7 +390,7 @@ void Player::update(int deltaTime, int level)
 	{
 		if (bSlowMode) posPlayer.x += 2;
 		else posPlayer.x += 3;
-		if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3)) {
+		if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3)) {
 			if (bSlowMode) posPlayer.x -= 2;
 			else posPlayer.x -= 3;
 			if (bClimbing && !bDashMode) {
@@ -428,11 +428,11 @@ void Player::update(int deltaTime, int level)
 		bGrabbing = false;
 		if (!map->collisionMoveDown(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
 			posPlayer.x += 3;
-			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 6) && !Game::instance().getKey('c')) {
+			if (map->collisionMoveRight(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 6) && !Game::instance().getKey('c')) {
 				bClimbing = true;
 			}
 			posPlayer.x -= 6;
-			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, 3) && !Game::instance().getKey('c')) {
+			if (map->collisionMoveLeft(posPlayer, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode, 3) && !Game::instance().getKey('c')) {
 				bClimbing = true;
 			}
 			posPlayer.x += 3;
