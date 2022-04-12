@@ -63,6 +63,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	bStrawberryCollected = false;
 	strawberryUp = true;
 	dashDirection = 0;
+	platformFrames = {0,0,0,0,0,0,0,0,0,0,0,0};
 	setInitialPosition(24, 12 * 24);
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
@@ -190,7 +191,14 @@ bool Player::spriteCollision(Sprite *s1, Sprite *s2, bool isWall) {
 	bool noHorizontalCollide = s1->getPosition().x + spriteSize <= s2->getPosition().x || s1->getPosition().x >= s2->getPosition().x + spriteSize;
 	bool noVerticalCollide = s1->getPosition().y + spriteSize <= s2->getPosition().y || s1->getPosition().y >= s2->getPosition().y + spriteSize;
 	if (noHorizontalCollide || noVerticalCollide) return false;
-	cout << "colisiona" << endl;
+	return true;
+}
+
+bool Player::platformCollision(Sprite* s1, Sprite* s2) {
+	int spriteSize = 28;
+	bool noHorizontalCollide = s1->getPosition().x + spriteSize <= s2->getPosition().x || s1->getPosition().x >= s2->getPosition().x + spriteSize;
+	bool noVerticalCollide = s1->getPosition().y + spriteSize <= s2->getPosition().y;
+	if (noHorizontalCollide || noVerticalCollide) return false;
 	return true;
 }
 
@@ -199,7 +207,7 @@ void Player::resetLevel() {
 	bStrawberryCollected = false;
 }
 
-void Player::setStrawberryDispl(glm::fvec2 displ) {
+void Player::setStrawberryDispl(glm::dvec2 displ) {
 	strawberryDispl = displ;
 }
 
@@ -319,18 +327,70 @@ void Player::update(int deltaTime, int level)
 			else if (level == 9) posPlayer.y += 3;
 		}
 	}
+
+	for (int i = 0; i < 12; ++i) {
+		if (platformCollision(sprite, platforms[i])) {
+			if (sprite->getPosition().y + 28 > platforms[i]->getPosition().y) {
+				if (Game::instance().getKey('c') && !bJumping) {
+					jumpAngle = 0;
+					startY = posPlayer.y;
+					if (sprite->animation() == STAND_RIGHT || sprite->animation() == LOOK_DOWN_RIGHT || sprite->animation() == LOOK_UP_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
+					else if (sprite->animation() == STAND_LEFT || sprite->animation() == LOOK_DOWN_LEFT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);
+					bJumping = true;
+				}
+				if (Game::instance().getKey('x') && !bDashing) {
+					dashY = posPlayer.y;
+					if (sprite->animation() == STAND_LEFT || sprite->animation() == CLIMB_RIGHT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);
+					if (sprite->animation() == STAND_RIGHT || sprite->animation() == CLIMB_LEFT || sprite->animation() == LOOK_UP_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
+					if (Game::instance().getSpecialKey(GLUT_KEY_RIGHT)) {
+						if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) dashDirection = 1;
+						else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) dashDirection = 7;
+						else dashDirection = 0;
+					}
+					else if (Game::instance().getSpecialKey(GLUT_KEY_LEFT)) {
+						if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) dashDirection = 3;
+						else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) dashDirection = 5;
+						else dashDirection = 4;
+					}
+					else if (Game::instance().getSpecialKey(GLUT_KEY_DOWN)) dashDirection = 2;
+					else if (Game::instance().getSpecialKey(GLUT_KEY_UP)) dashDirection = 6;
+					else if (sprite->animation() == STAND_LEFT || sprite->animation() == JUMP_LEFT || sprite->animation() == CLIMB_RIGHT) dashDirection = 4;
+					else if (sprite->animation() == STAND_RIGHT || sprite->animation() == JUMP_RIGHT || sprite->animation() == CLIMB_LEFT) dashDirection = 0;
+					dashAngle = 0;
+					bDashing = true;
+				}
+				platforms[i]->changeAnimation(TOUCHED);
+				if(platformFrames[i] < 30 && !bJumping) posPlayer.y -= FALL_STEP;
+				if (platformFrames[i] == 20) platforms[i]->changeAnimation(BROKEN);
+				i = 12;
+			}
+		}
+	}
+	
+	for (int i = 0; i < 12; ++i) {
+		if (platforms[i]->animation() != FULL) platformFrames[i]++;
+		if (platformFrames[i] >= 50) {
+			platformFrames[i] = 0;
+			platforms[i]->changeAnimation(FULL);
+		}
+	}
+
 	if (spriteCollision(sprite, strawberry, false)) bStrawberryCollected = true; 
 	if (spriteCollision(sprite, springLeft, false)) {
-		bJumping = true;
-		jumpAngle = 0;
-		dashAngle = 0;
-		springLeft->changeAnimation(CLOSED);
+		if (level == 3 || level == 9) {
+			bJumping = true;
+			jumpAngle = 0;
+			dashAngle = 0;
+			springLeft->changeAnimation(CLOSED);
+		}
 	}
 	else if(spriteCollision(sprite, springRight, false)) {
-		bJumping = true;
-		jumpAngle = 0;
-		dashAngle = 0;
-		springRight->changeAnimation(CLOSED);
+		if (level == 3 || level == 9) {
+			bJumping = true;
+			jumpAngle = 0;
+			dashAngle = 0;
+			springRight->changeAnimation(CLOSED);
+		}
 	}
 
 	if (bJumping) {
@@ -642,7 +702,7 @@ void Player::update(int deltaTime, int level)
 				if (strawberryDispl.y < 126) strawberryUp = true;
 				else strawberryDispl.y -= 0.35;
 			}
-			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x), float(tileMapDispl.y + strawberryDispl.y + 890)));
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x), float(tileMapDispl.y + strawberryDispl.y + 938)));
 			springLeft->setPosition(glm::vec2(float(tileMapDispl.x + 144), float(tileMapDispl.y + 1224)));
 			springRight->setPosition(glm::vec2(float(tileMapDispl.x + 336), float(tileMapDispl.y + 1224)));
 			break;
@@ -656,8 +716,10 @@ void Player::update(int deltaTime, int level)
 				else {
 					strawberryDispl.y += 0.35;
 					if (strawberryDispl.y > 133) {
-						wing[0]->changeAnimation(WING_UP);
-						wing[1]->changeAnimation(WING_UP);
+						if (strawberryDispl.y > 133) {
+							wing[0]->changeAnimation(WING_UP);
+							wing[1]->changeAnimation(WING_UP);
+						}
 					}
 				}
 			}
@@ -725,9 +787,7 @@ void Player::render(int level)
 			wing[1]->render();
 			strawberry->render();
 		}
-		for (int i = 0; i < 12; ++i) {
-			platforms[i]->render();
-		}
+		for (int i = 0; i < 12; ++i) if(platformFrames[i] <30) platforms[i]->render();
 		break;
 	case 5:
 		break;
