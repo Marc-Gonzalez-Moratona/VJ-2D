@@ -54,6 +54,7 @@ enum PlatformAnims {
 
 void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 {
+	engine = irrklang::createIrrKlangDevice();
 	bJumping = false;
 	bClimbing = false;
 	bClimbJumping = false;

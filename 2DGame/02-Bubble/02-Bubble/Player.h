@@ -5,6 +5,7 @@
 #include "Sprite.h"
 #include "TileMap.h"
 #include <vector>
+#include <irrklang.h>
 
 
 // Player is basically a Sprite that represents the player. As such it has
@@ -39,7 +40,7 @@ private:
 	Sprite *sprite, *strawberry, *springLeft, *springRight, *balloon[2], * rope[2], * wall, * wing[2], * platforms[12];
 	TileMap *map;
 	bool bGodMode, bSlowMode, bDashMode, bChanging;
-
+	irrklang::ISoundEngine* engine;
 };
 
 
