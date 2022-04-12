@@ -93,6 +93,7 @@ void Scene::update(int deltaTime)
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 102 * map->getTileSize()));
 		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 102 * map->getTileSize());
 		player->resetLevel();
+		player->setBalloonDispl(glm::fvec2(0, 0));
 		nextLevel = false;
 	}
 	if (Game::instance().getKey('7') || (nextLevel && level == 6)) {

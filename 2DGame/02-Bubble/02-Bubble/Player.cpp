@@ -39,8 +39,12 @@ enum WingAnims
 	WING_UP, WING_MEDIUM, WING_DOWN
 };
 
+enum RopeAnims {
+	ROPE_LEFT, ROPE_MIDDLE, ROPE_RIGHT
+};
+
 enum BaloonAnims {
-	FIRST, SECOND, THIRD
+	BALLOON_EXIST
 };
 
 enum PlatformAnims {
@@ -64,6 +68,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	strawberryUp = true;
 	dashDirection = 0;
 	platformFrames = {0,0,0,0,0,0,0,0,0,0,0,0};
+	bBalloonsCollected = { false, false };
 	setInitialPosition(24, 12 * 24);
 	spritesheet.loadFromFile("images/sprite.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	sprite = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.25, 0.25), &spritesheet, &shaderProgram);
@@ -113,15 +118,48 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	tileMapDispl = tileMapPos;
 	sprite->setPosition(glm::vec2(float(tileMapDispl.x + posPlayer.x), float(tileMapDispl.y + posPlayer.y)));
 
-	wallsheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	wall = Sprite::createSprite(glm::ivec2(48, 48), glm::vec2(0.25f, 0.25f), &springsheet, &shaderProgram);
+	tilesheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
+
+
+	wall = Sprite::createSprite(glm::ivec2(48, 48), glm::vec2(0.25f, 0.25f), &tilesheet, &shaderProgram);
 	wall->setNumberAnimations(1);
 	wall->setAnimationSpeed(WALL_EXIST, 8);
 	wall->addKeyframe(WALL_EXIST, glm::vec2(0.5f, 0.f));
 	wall->changeAnimation(0);
 
-	wingsheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	wing[0] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
+	balloon[0] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
+	balloon[0]->setNumberAnimations(1);
+	balloon[0]->setAnimationSpeed(BALLOON_EXIST, 8);
+	balloon[0]->addKeyframe(BALLOON_EXIST, glm::vec2(0.f, 0.125f));
+	balloon[0]->changeAnimation(0);
+
+	balloon[1] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
+	balloon[1]->setNumberAnimations(1);
+	balloon[1]->setAnimationSpeed(BALLOON_EXIST, 8);
+	balloon[1]->addKeyframe(BALLOON_EXIST, glm::vec2(0.f, 0.125f));
+	balloon[1]->changeAnimation(0);
+
+	rope[0] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
+	rope[0]->setNumberAnimations(3);
+	rope[0]->setAnimationSpeed(ROPE_LEFT, 8);
+	rope[0]->addKeyframe(ROPE_LEFT, glm::vec2(0.25f, 0.125f));
+	rope[0]->setAnimationSpeed(ROPE_MIDDLE, 8);
+	rope[0]->addKeyframe(ROPE_MIDDLE, glm::vec2(0.f, 0.25f));
+	rope[0]->setAnimationSpeed(ROPE_RIGHT, 8);
+	rope[0]->addKeyframe(ROPE_RIGHT, glm::vec2(0.125f, 0.125f));
+	rope[0]->changeAnimation(0);
+
+	rope[1] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
+	rope[1]->setNumberAnimations(3);
+	rope[1]->setAnimationSpeed(ROPE_LEFT, 8);
+	rope[1]->addKeyframe(ROPE_LEFT, glm::vec2(0.25f, 0.125f));
+	rope[1]->setAnimationSpeed(ROPE_MIDDLE, 8);
+	rope[1]->addKeyframe(ROPE_MIDDLE, glm::vec2(0.f, 0.25f));
+	rope[1]->setAnimationSpeed(ROPE_RIGHT, 8);
+	rope[1]->addKeyframe(ROPE_RIGHT, glm::vec2(0.125f, 0.125f));
+	rope[1]->changeAnimation(0);
+
+	wing[0] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 	wing[0]->setNumberAnimations(3);
 	wing[0]->setAnimationSpeed(WING_UP, 8);
 	wing[0]->setAnimationSpeed(WING_MEDIUM , 8);
@@ -131,7 +169,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	wing[0]->addKeyframe(WING_DOWN, glm::vec2(0.75f, 0.875f));
 	wing[0]->changeAnimation(0);
 	
-	wing[1] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
+	wing[1] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 	wing[1]->setNumberAnimations(3);
 	wing[1]->setAnimationSpeed(WING_UP, 8);
 	wing[1]->setAnimationSpeed(WING_MEDIUM, 8);
@@ -141,16 +179,14 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	wing[1]->addKeyframe(WING_DOWN, glm::vec2(0.625f, 0.875f));
 	wing[1]->changeAnimation(0);
 
-	strawberrysheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
-	strawberry = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
+	strawberry = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 	strawberry->setNumberAnimations(1);
 	strawberry->setAnimationSpeed(STRAWBERRY_EXIST, 8);
 	strawberry->addKeyframe(STRAWBERRY_EXIST, glm::vec2(0.f, 0.875f));
 	strawberry->changeAnimation(0);
 
-	platformsheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	for (int i = 0; i < 12; ++i) {
-		platforms[i] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
+		platforms[i] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 		platforms[i]->setNumberAnimations(3);
 		platforms[i]->setAnimationSpeed(FULL, 8);
 		platforms[i]->addKeyframe(FULL, glm::vec2(0.f, 0.375f));
@@ -161,10 +197,9 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 		platforms[i]->changeAnimation(0);
 	}
 
-	springsheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 	
-	springLeft = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
-	springRight = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &springsheet, &shaderProgram);
+	springLeft = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
+	springRight = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 
 	springLeft->setNumberAnimations(2);
 	springRight->setNumberAnimations(2);
@@ -209,6 +244,10 @@ void Player::resetLevel() {
 
 void Player::setStrawberryDispl(glm::dvec2 displ) {
 	strawberryDispl = displ;
+}
+
+void Player::setBalloonDispl(glm::dvec2 displ) {
+	balloonDispl = displ;
 }
 
 void Player::update(int deltaTime, int level)
@@ -750,6 +789,26 @@ void Player::update(int deltaTime, int level)
 		case 5:
 			break;
 		case 6:
+			if (balloonUp) {
+				if (balloonDispl.y > 4) {
+					balloonUp = false;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y += 0.35;
+			}
+			else {
+				if (balloonDispl.y < -4) {
+					balloonUp = true;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y -= 0.35;
+			}
+			balloon[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 230), float(tileMapDispl.y + balloonDispl.y + 2376)));
+			rope[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 230), float(tileMapDispl.y + balloonDispl.y + 2400)));
 			break;
 		case 7:
 			break;
@@ -792,13 +851,28 @@ void Player::render(int level)
 	case 5:
 		break;
 	case 6:
+		if (!bBalloonsCollected[0]) {
+			balloon[0]->render();
+			rope[0]->render();
+		}
 		break;
 	case 7:
 		break;
 	case 8:
+		if (!bBalloonsCollected[0]) {
+			balloon[0]->render();
+			rope[0]->render();
+		}
 		break;
 	case 9:
-		break;
+		if (!bBalloonsCollected[0]) {
+			balloon[0]->render();
+			rope[0]->render();
+		}
+		if (!bBalloonsCollected[1]) {
+			balloon[1]->render();
+			rope[1]->render();
+		}	break;
 	case 10:
 		break;
 	case 11:
