@@ -197,7 +197,6 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 		platforms[i]->addKeyframe(BROKEN, glm::vec2(0.25f, 0.375f));
 		platforms[i]->changeAnimation(0);
 	}
-
 	
 	springLeft = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 	springRight = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
@@ -241,6 +240,7 @@ bool Player::platformCollision(Sprite* s1, Sprite* s2) {
 void Player::resetLevel() {
 	bWallBroken = false;
 	bStrawberryCollected = false;
+	bBalloonsCollected = { false, false };
 }
 
 void Player::setStrawberryDispl(glm::dvec2 displ) {
@@ -259,6 +259,11 @@ void Player::update(int deltaTime, int level)
 	springRight->update(deltaTime);
 	wall->update(deltaTime);
 	strawberry->update(deltaTime);
+	for (int i = 0; i < 12; ++i) platforms[i]->update(deltaTime);
+	balloon[0]->update(deltaTime);
+	balloon[1]->update(deltaTime);
+	rope[0]->update(deltaTime);
+	rope[1]->update(deltaTime);
 
 	if (!Game::instance().getKey('g') && !Game::instance().getKey('d') && !Game::instance().getKey('s')) bChanging = false;
 	if (!bChanging) {
@@ -292,6 +297,7 @@ void Player::update(int deltaTime, int level)
 			if (sprite->animation() == STAND_RIGHT || sprite->animation() == LOOK_DOWN_RIGHT || sprite->animation() == LOOK_UP_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
 			else if (sprite->animation() == STAND_LEFT || sprite->animation() == LOOK_DOWN_LEFT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);
 			bJumping = true;
+			bBalloonsCollected = { false,false };
 		}
 	}
 
@@ -417,8 +423,14 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 
-	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9)) dashAngle = 0;
-	if (spriteCollision(sprite, balloon[1], false) && level == 9) dashAngle = 0;
+	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9)) {
+		bBalloonsCollected[0] = true;
+		dashAngle = 0;
+	}
+	if (spriteCollision(sprite, balloon[1], false) && level == 9) {
+		bBalloonsCollected[1] = true;
+		dashAngle = 0;
+	}
 	
 	if (spriteCollision(sprite, strawberry, false)) bStrawberryCollected = true; 
 	if (spriteCollision(sprite, springLeft, false)) {
