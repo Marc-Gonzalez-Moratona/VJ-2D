@@ -30,7 +30,7 @@ public:
 	void setBalloonDispl(glm::dvec2 strawberryDispl);
 
 private:
-	bool bJumping, bClimbing, bClimbJumping, bDashing, bGrabbing, bWallBroken, bStrawberryCollected, strawberryUp, balloonUp;
+	bool bJumping, bClimbing, bClimbJumping, bDashing, bGrabbing, bWallBroken, bStrawberryCollected, strawberryUp, balloonUp, bSpringJump;
 	glm::ivec2 tileMapDispl, posPlayer;
 	glm::dvec2 strawberryDispl, balloonDispl;
 	int jumpAngle, climbJumpAngle, dashAngle, startY, initialX, initialY, dashDirection, dashY;
@@ -40,6 +40,7 @@ private:
 	Sprite *sprite, *strawberry, *springLeft, *springRight, *balloon[2], * rope[2], * wall, * wing[2], * platforms[12];
 	TileMap *map;
 	bool bGodMode, bSlowMode, bDashMode, bChanging;
+
 	irrklang::ISoundEngine* engine;
 };
 
