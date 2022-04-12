@@ -106,5 +106,8 @@ void Sprite::setPosition(const glm::vec2 &pos)
 	position = pos;
 }
 
+glm::vec2 Sprite::getPosition() {
+	return position;
+}
 
 
