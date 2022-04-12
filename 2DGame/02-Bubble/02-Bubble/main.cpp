@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 		return 0; // error starting up the engine
 
 	  // play some sound stream, looped
-	engine->play2D("sfx/somefile.mp3", true);
+	engine->play2D("music/title.mp3", true);
 
 
 	// GLUT initialization
