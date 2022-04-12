@@ -24,7 +24,8 @@ public:
 	void setPosition(const glm::vec2& pos);
 	void setInitialPosition(int X, int Y);
 	bool spriteCollision(Sprite* s1, Sprite* s2, bool isWall);
-	bool platformCollision(Sprite *s1, Sprite *s2);
+	bool platformCollision(Sprite* s1, Sprite* s2);
+	bool cloudCollision(Sprite *s1, Sprite *s2);
 	void resetLevel();
 	void setStrawberryDispl(glm::dvec2 strawberryDispl);
 	void setBalloonDispl(glm::dvec2 strawberryDispl);
@@ -33,11 +34,11 @@ private:
 	bool bJumping, bClimbing, bClimbJumping, bDashing, bGrabbing, bWallBroken, bStrawberryCollected, strawberryUp, balloonUp, bSpringJump;
 	glm::ivec2 tileMapDispl, posPlayer;
 	glm::dvec2 strawberryDispl, balloonDispl;
-	int jumpAngle, climbJumpAngle, dashAngle, startY, initialX, initialY, dashDirection, dashY;
+	int jumpAngle, climbJumpAngle, dashAngle, startY, initialX, initialY, dashDirection, dashY, cloudDispl;
 	vector<int> platformFrames;
 	vector<bool> bBalloonsCollected;
 	Texture spritesheet, tilesheet;
-	Sprite *sprite, *strawberry, *springLeft, *springRight, *balloon[2], * rope[2], * wall, * wing[2], * platforms[12];
+	Sprite *sprite, *strawberry, *springLeft, *springRight, *balloon[2], * rope[2], * wall, * wing[2], * platforms[12], * cloud[10];
 	TileMap *map;
 	bool bGodMode, bSlowMode, bDashMode, bChanging;
 
