@@ -7,10 +7,10 @@
 
 
 #define JUMP_ANGLE_STEP 4
-#define JUMP_HEIGHT 68
+#define JUMP_HEIGHT 48
 #define FALL_STEP 4
-#define DASH_ANGLE_STEP 12
-#define DASH_HEIGHT 72
+#define DASH_ANGLE_STEP 10
+#define DASH_HEIGHT 60
 
 enum PlayerAnims
 {
@@ -56,6 +56,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 {
 	engine = irrklang::createIrrKlangDevice();
 	bJumping = false;
+	bSpringJump = false;
 	bClimbing = false;
 	bClimbJumping = false;
 	bDashing = false;
@@ -121,7 +122,6 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 
 	tilesheet.loadFromFile("images/tilesheet.png", TEXTURE_PIXEL_FORMAT_RGBA);
 
-
 	wall = Sprite::createSprite(glm::ivec2(48, 48), glm::vec2(0.25f, 0.25f), &tilesheet, &shaderProgram);
 	wall->setNumberAnimations(1);
 	wall->setAnimationSpeed(WALL_EXIST, 8);
@@ -158,7 +158,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	rope[1]->addKeyframe(ROPE_MIDDLE, glm::vec2(0.f, 0.25f));
 	rope[1]->setAnimationSpeed(ROPE_RIGHT, 8);
 	rope[1]->addKeyframe(ROPE_RIGHT, glm::vec2(0.125f, 0.125f));
-	rope[1]->changeAnimation(0);
+	rope[1]->changeAnimation(2);
 
 	wing[0] = Sprite::createSprite(glm::ivec2(24, 24), glm::vec2(0.125f, 0.125f), &tilesheet, &shaderProgram);
 	wing[0]->setNumberAnimations(3);
@@ -233,7 +233,7 @@ bool Player::spriteCollision(Sprite *s1, Sprite *s2, bool isWall) {
 bool Player::platformCollision(Sprite* s1, Sprite* s2) {
 	int spriteSize = 28;
 	bool noHorizontalCollide = s1->getPosition().x + spriteSize <= s2->getPosition().x || s1->getPosition().x >= s2->getPosition().x + spriteSize;
-	bool noVerticalCollide = s1->getPosition().y + spriteSize <= s2->getPosition().y;
+	bool noVerticalCollide = s1->getPosition().y + spriteSize <= s2->getPosition().y || s1->getPosition().y >= s2->getPosition().y + spriteSize;
 	if (noHorizontalCollide || noVerticalCollide) return false;
 	return true;
 }
@@ -369,7 +369,9 @@ void Player::update(int deltaTime, int level)
 	}
 
 	for (int i = 0; i < 12; ++i) {
-		if (platformCollision(sprite, platforms[i])) {
+		if (level == 8 && i > 5) i = 12;
+		else if (level == 10 && i > 3) i = 12;
+		else if ((level == 4 || level == 8 || level == 10) && platformCollision(sprite, platforms[i])) {
 			if (sprite->getPosition().y + 28 > platforms[i]->getPosition().y) {
 				if (Game::instance().getKey('c') && !bJumping) {
 					jumpAngle = 0;
@@ -415,13 +417,18 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 
+	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9)) dashAngle = 0;
+	if (spriteCollision(sprite, balloon[1], false) && level == 9) dashAngle = 0;
+	
 	if (spriteCollision(sprite, strawberry, false)) bStrawberryCollected = true; 
 	if (spriteCollision(sprite, springLeft, false)) {
-		if (level == 3 || level == 9) {
+		if (level == 3 || level == 8 || level == 9) {
 			bJumping = true;
 			jumpAngle = 0;
 			dashAngle = 0;
+			startY = posPlayer.y;
 			springLeft->changeAnimation(CLOSED);
+			bSpringJump = true;
 		}
 	}
 	else if(spriteCollision(sprite, springRight, false)) {
@@ -429,7 +436,9 @@ void Player::update(int deltaTime, int level)
 			bJumping = true;
 			jumpAngle = 0;
 			dashAngle = 0;
+			startY = posPlayer.y;
 			springRight->changeAnimation(CLOSED);
+			bSpringJump = true;
 		}
 	}
 
@@ -438,19 +447,27 @@ void Player::update(int deltaTime, int level)
 		else jumpAngle += JUMP_ANGLE_STEP;
 		// FIRST HALF OF A JUMP
 		if (jumpAngle <= 90) {
-			posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
-			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) bJumping = false;
+			if(bSpringJump) posPlayer.y = int(startY - (JUMP_HEIGHT + 50) * sin(3.14159f * jumpAngle / 180.f));
+			else posPlayer.y = int(startY - JUMP_HEIGHT * sin(3.14159f * jumpAngle / 180.f));
+			if (map->collisionMoveUp(posPlayer, glm::ivec2(24, 24), &posPlayer.y)) {
+				bJumping = false;
+				bSpringJump = false;
+			}
 		}
 		// START TO FALL AFTER THE FIRST HALF
-		else bJumping = false;
+		else {
+			bJumping = false;
+			bSpringJump = false;
+		}
 	}
 	else {
 		// FALLING
 		if (bGrabbing) {
 			if (bSlowMode) posPlayer.y += FALL_STEP / 4;
-			else posPlayer.y += (FALL_STEP / 2);
+			else posPlayer.y += FALL_STEP / 2;
 		}
-		else if (!bDashing || (bDashing && dashAngle >= 60)) {
+		else if (bJumping) posPlayer.y += FALL_STEP / 4;
+		else if (!bDashing) {
 			if (bSlowMode) posPlayer.y += FALL_STEP / 2;
 			else posPlayer.y += FALL_STEP;
 		}
@@ -461,6 +478,7 @@ void Player::update(int deltaTime, int level)
 		{
 			bClimbing = false;
 			bJumping = false;
+			bSpringJump = false;
 			bClimbJumping = false;
 			bGrabbing = false;
 			if (!Game::instance().getKey('c')) {
@@ -495,6 +513,7 @@ void Player::update(int deltaTime, int level)
 		cout << "ClimbJump detected" << endl;
 		bClimbJumping = true;
 		bJumping = false;
+		bSpringJump = false;
 		bClimbing = false;
 		bGrabbing = false;
 		startY = posPlayer.y;
@@ -630,7 +649,7 @@ void Player::update(int deltaTime, int level)
 
 	// WALK
 	// MOVE LEFT
-	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection != 4 && dashDirection != 0)))
+	if (Game::instance().getSpecialKey(GLUT_KEY_LEFT) && !bClimbJumping && (!bDashing || (bDashing && dashDirection != 4 && dashDirection != 0  && dashAngle > 90)))
 	{
 		if (bSlowMode) posPlayer.x -= 2;
 		else posPlayer.x -= 3;
@@ -721,42 +740,42 @@ void Player::update(int deltaTime, int level)
 	switch (level) {
 		case 1:
 			if (strawberryUp) {
-				if (strawberryDispl.y > 138) strawberryUp = false;
+				if (strawberryDispl.y > 6) strawberryUp = false;
 				else strawberryDispl.y += 0.35;
 			}
 			else {
-				if (strawberryDispl.y < 126) strawberryUp = true; 
+				if (strawberryDispl.y < -6) strawberryUp = true; 
 				else strawberryDispl.y -= 0.35;
 			}
-			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x), float(tileMapDispl.y + strawberryDispl.y)));
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 59), float(tileMapDispl.y + strawberryDispl.y + 132)));
 			wall->setPosition(glm::vec2(float(tileMapDispl.x + 47), float(tileMapDispl.y + 120)));
 			break;
 		case 2:
 			break;
 		case 3:
 			if (strawberryUp) {
-				if (strawberryDispl.y > 138) strawberryUp = false;
+				if (strawberryDispl.y > 6) strawberryUp = false;
 				else strawberryDispl.y += 0.35;
 			}
 			else {
-				if (strawberryDispl.y < 126) strawberryUp = true;
+				if (strawberryDispl.y < -6) strawberryUp = true;
 				else strawberryDispl.y -= 0.35;
 			}
-			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x), float(tileMapDispl.y + strawberryDispl.y + 938)));
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 47), float(tileMapDispl.y + strawberryDispl.y + 1070)));
 			springLeft->setPosition(glm::vec2(float(tileMapDispl.x + 144), float(tileMapDispl.y + 1224)));
 			springRight->setPosition(glm::vec2(float(tileMapDispl.x + 336), float(tileMapDispl.y + 1224)));
 			break;
 		case 4:
 			if (strawberryUp) {
-				if (strawberryDispl.y > 138) {
+				if (strawberryDispl.y > 6) {
 					strawberryUp = false;
 					wing[0]->changeAnimation(WING_DOWN);
 					wing[1]->changeAnimation(WING_DOWN);
 				}
 				else {
 					strawberryDispl.y += 0.35;
-					if (strawberryDispl.y > 133) {
-						if (strawberryDispl.y > 133) {
+					if (strawberryDispl.y > 1) {
+						if (strawberryDispl.y > 1) {
 							wing[0]->changeAnimation(WING_UP);
 							wing[1]->changeAnimation(WING_UP);
 						}
@@ -764,16 +783,16 @@ void Player::update(int deltaTime, int level)
 				}
 			}
 			else {
-				if (strawberryDispl.y < 126) {
+				if (strawberryDispl.y < -6) {
 					strawberryUp = true;
 					wing[0]->changeAnimation(WING_MEDIUM);
 					wing[1]->changeAnimation(WING_MEDIUM);
 				}
 				else strawberryDispl.y -= 0.35;
 			}
-			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 72), float(tileMapDispl.y + strawberryDispl.y + 1300)));
-			wing[0]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 94), float(tileMapDispl.y + strawberryDispl.y + 1290)));
-			wing[1]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 50), float(tileMapDispl.y + strawberryDispl.y + 1290)));
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 72), float(tileMapDispl.y + strawberryDispl.y + 1432)));
+			wing[0]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 94), float(tileMapDispl.y + strawberryDispl.y + 1422)));
+			wing[1]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 50), float(tileMapDispl.y + strawberryDispl.y + 1422)));
 			platforms[0]->setPosition(glm::vec2(float(tileMapDispl.x + 120), float(tileMapDispl.y + 1680)));
 			platforms[1]->setPosition(glm::vec2(float(tileMapDispl.x + 144), float(tileMapDispl.y + 1680)));
 			platforms[2]->setPosition(glm::vec2(float(tileMapDispl.x + 220), float(tileMapDispl.y + 1656)));
@@ -812,12 +831,110 @@ void Player::update(int deltaTime, int level)
 			rope[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 230), float(tileMapDispl.y + balloonDispl.y + 2400)));
 			break;
 		case 7:
+			if (strawberryUp) {
+				if (strawberryDispl.y > 6) {
+					strawberryUp = false;
+					wing[0]->changeAnimation(WING_DOWN);
+					wing[1]->changeAnimation(WING_DOWN);
+				}
+				else {
+					strawberryDispl.y += 0.35;
+					if (strawberryDispl.y > 1) {
+						if (strawberryDispl.y > 1) {
+							wing[0]->changeAnimation(WING_UP);
+							wing[1]->changeAnimation(WING_UP);
+						}
+					}
+				}
+			}
+			else {
+				if (strawberryDispl.y < -6) {
+					strawberryUp = true;
+					wing[0]->changeAnimation(WING_MEDIUM);
+					wing[1]->changeAnimation(WING_MEDIUM);
+				}
+				else strawberryDispl.y -= 0.35;
+			}
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 262), float(tileMapDispl.y + strawberryDispl.y + 2702)));
+			wing[0]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 284), float(tileMapDispl.y + strawberryDispl.y + 2692)));
+			wing[1]->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 240), float(tileMapDispl.y + strawberryDispl.y + 2692)));
 			break;
 		case 8:
+			if (balloonUp) {
+				if (balloonDispl.y > 4) {
+					balloonUp = false;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y += 0.35;
+			}
+			else {
+				if (balloonDispl.y < -4) {
+					balloonUp = true;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y -= 0.35;
+			}
+			balloon[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 170), float(tileMapDispl.y + balloonDispl.y + 3140)));
+			rope[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 170), float(tileMapDispl.y + balloonDispl.y + 3164)));
+			platforms[0]->setPosition(glm::vec2(float(tileMapDispl.x + 168), float(tileMapDispl.y + 3380)));
+			platforms[1]->setPosition(glm::vec2(float(tileMapDispl.x + 192), float(tileMapDispl.y + 3380)));
+			platforms[2]->setPosition(glm::vec2(float(tileMapDispl.x + 216), float(tileMapDispl.y + 3380)));
+			platforms[3]->setPosition(glm::vec2(float(tileMapDispl.x + 312), float(tileMapDispl.y + 3356)));
+			platforms[4]->setPosition(glm::vec2(float(tileMapDispl.x + 360), float(tileMapDispl.y + 3240)));
+			platforms[5]->setPosition(glm::vec2(float(tileMapDispl.x + 360), float(tileMapDispl.y + 3216)));
+			springLeft->setPosition(glm::vec2(float(tileMapDispl.x + 312), float(tileMapDispl.y + 3332)));
 			break;
 		case 9:
+			if (balloonUp) {
+				if (balloonDispl.y > 4) {
+					balloonUp = false;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+					if (rope[1]->animation() == ROPE_MIDDLE) rope[1]->changeAnimation(ROPE_RIGHT);
+					else if (rope[1]->animation() == ROPE_RIGHT) rope[1]->changeAnimation(ROPE_LEFT);
+					else if (rope[1]->animation() == ROPE_LEFT) rope[1]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y += 0.35;
+			}
+			else {
+				if (balloonDispl.y < -4) {
+					balloonUp = true;
+					if (rope[0]->animation() == ROPE_MIDDLE) rope[0]->changeAnimation(ROPE_RIGHT);
+					else if (rope[0]->animation() == ROPE_RIGHT) rope[0]->changeAnimation(ROPE_LEFT);
+					else if (rope[0]->animation() == ROPE_LEFT) rope[0]->changeAnimation(ROPE_MIDDLE);
+					if (rope[1]->animation() == ROPE_MIDDLE) rope[1]->changeAnimation(ROPE_RIGHT);
+					else if (rope[1]->animation() == ROPE_RIGHT) rope[1]->changeAnimation(ROPE_LEFT);
+					else if (rope[1]->animation() == ROPE_LEFT) rope[1]->changeAnimation(ROPE_MIDDLE);
+				}
+				else balloonDispl.y -= 0.35;
+			}
+			if (strawberryUp) {
+				if (strawberryDispl.y > 6) strawberryUp = false;
+				else strawberryDispl.y += 0.35;
+			}
+			else {
+				if (strawberryDispl.y < -6) strawberryUp = true;
+				else strawberryDispl.y -= 0.35;
+			}
+			balloon[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 110), float(tileMapDispl.y + balloonDispl.y + 3580)));
+			rope[0]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 110), float(tileMapDispl.y + balloonDispl.y + 3604))); 
+			balloon[1]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 215), float(tileMapDispl.y + balloonDispl.y + 3575)));
+			rope[1]->setPosition(glm::vec2(float(tileMapDispl.x + balloonDispl.x + 215), float(tileMapDispl.y + balloonDispl.y + 3599))); 
+			wall->setPosition(glm::vec2(float(tileMapDispl.x + 192), float(tileMapDispl.y + 3504)));
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 208), float(tileMapDispl.y + strawberryDispl.y + 3520)));
+			springLeft->setPosition(glm::vec2(float(tileMapDispl.x + 312), float(tileMapDispl.y + 3792)));
+			springRight->setPosition(glm::vec2(float(tileMapDispl.x + 336), float(tileMapDispl.y + 3792)));
 			break;
 		case 10:
+			platforms[0]->setPosition(glm::vec2(float(tileMapDispl.x + 144), float(tileMapDispl.y + 4250)));
+			platforms[1]->setPosition(glm::vec2(float(tileMapDispl.x + 168), float(tileMapDispl.y + 4250)));
+			platforms[2]->setPosition(glm::vec2(float(tileMapDispl.x + 264), float(tileMapDispl.y + 4250)));
+			platforms[3]->setPosition(glm::vec2(float(tileMapDispl.x + 288), float(tileMapDispl.y + 4250)));
 			break;
 		case 11:
 			break;
@@ -858,12 +975,19 @@ void Player::render(int level)
 		}
 		break;
 	case 7:
+		if (!bStrawberryCollected) {
+			wing[0]->render();
+			wing[1]->render();
+			strawberry->render();
+		}
 		break;
 	case 8:
 		if (!bBalloonsCollected[0]) {
 			balloon[0]->render();
 			rope[0]->render();
 		}
+		for (int i = 0; i < 6; ++i) if (platformFrames[i] < 30) platforms[i]->render();
+		springLeft->render();
 		break;
 	case 9:
 		if (!bBalloonsCollected[0]) {
@@ -873,8 +997,14 @@ void Player::render(int level)
 		if (!bBalloonsCollected[1]) {
 			balloon[1]->render();
 			rope[1]->render();
-		}	break;
+		}	
+		springLeft->render();
+		springRight->render();
+		if (!bWallBroken) wall->render();
+		else if (!bStrawberryCollected) strawberry->render();
+		break;
 	case 10:
+		for (int i = 0; i < 4; ++i) if (platformFrames[i] < 30) platforms[i]->render();
 		break;
 	case 11:
 		break;
