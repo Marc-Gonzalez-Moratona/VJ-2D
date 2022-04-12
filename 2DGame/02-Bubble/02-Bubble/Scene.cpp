@@ -37,6 +37,7 @@ void Scene::init()
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
 	player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 	player->setTileMap(map);
+	player->setStrawberryDispl(glm::fvec2(0, 0));
 
 	projection = glm::ortho(0.f, float(SCREEN_WIDTH - 1), float(SCREEN_HEIGHT - 1), 0.f);
 	currentTime = 0.0f;
@@ -54,7 +55,7 @@ void Scene::update(int deltaTime)
 		level = 1;
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize()));
 		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), INIT_PLAYER_Y_TILES * map->getTileSize());
-		player->setStrawberryDispl(glm::fvec2(59, 132));
+		player->setStrawberryDispl(glm::fvec2(0, 0));
 		player->resetLevel();
 		nextLevel = false;
 	}
@@ -69,7 +70,7 @@ void Scene::update(int deltaTime)
 		level = 3;
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 48 * map->getTileSize()));
 		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 48 * map->getTileSize());
-		player->setStrawberryDispl(glm::fvec2(47, 132));
+		player->setStrawberryDispl(glm::fvec2(0, 0));
 		player->resetLevel();
 		nextLevel = false;
 	}
@@ -77,7 +78,7 @@ void Scene::update(int deltaTime)
 		level = 4;
 		player->setPosition(glm::vec2(INIT_PLAYER_X_TILES * map->getTileSize(), 66 * map->getTileSize()));
 		player->setInitialPosition(INIT_PLAYER_X_TILES * map->getTileSize(), 66 * map->getTileSize());
-		player->setStrawberryDispl(glm::fvec2(0, 132));
+		player->setStrawberryDispl(glm::fvec2(0, 0));
 		player->resetLevel();
 		nextLevel = false;
 	}
@@ -100,6 +101,7 @@ void Scene::update(int deltaTime)
 		level = 7;
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES + 1) * map->getTileSize(), 120 * map->getTileSize()));
 		player->setInitialPosition((INIT_PLAYER_X_TILES + 1) * map->getTileSize(), 120 * map->getTileSize());
+		player->setStrawberryDispl(glm::fvec2(0, 0));
 		player->resetLevel();
 		nextLevel = false;
 	}
