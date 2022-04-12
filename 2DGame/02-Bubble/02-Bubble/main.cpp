@@ -1,7 +1,6 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 #include "Game.h"
-#include <irrKlang.h>
 
 
 //Remove console (only works in Visual Studio)
@@ -83,16 +82,6 @@ static void idleCallback()
 
 int main(int argc, char **argv)
 {
-	// start the sound engine with default parameters
-	irrklang::ISoundEngine* engine = irrklang::createIrrKlangDevice();
-
-	if (!engine)
-		return 0; // error starting up the engine
-
-	  // play some sound stream, looped
-	engine->play2D("music/title.mp3", true);
-
-
 	// GLUT initialization
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -118,10 +107,6 @@ int main(int argc, char **argv)
 	prevTime = glutGet(GLUT_ELAPSED_TIME);
 	// GLUT gains control of the application
 	glutMainLoop();
-
-
-	engine->drop(); // delete engine
-
 
 	return 0;
 }

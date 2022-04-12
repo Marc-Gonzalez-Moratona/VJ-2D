@@ -4,6 +4,7 @@
 
 #include "Scene.h"
 #include "Menu.h"
+#include <irrKlang.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -50,6 +51,9 @@ private:
 	Scene scene;                     // Scene to render
 	Menu menu;
 	int id;
+	irrklang::ISoundEngine* engine;
+	irrklang::ISound* titlemusic;
+	irrklang::ISound* stagemusic;
 };
 
 

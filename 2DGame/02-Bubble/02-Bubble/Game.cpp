@@ -11,6 +11,15 @@ void Game::init()
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
 
+	// start the sound engine with default parameters
+	engine = irrklang::createIrrKlangDevice();
+
+	if (!engine)
+		return; // error starting up the engine
+
+	  // play some sound stream, looped
+	titlemusic = engine->play2D("music/title.mp3", true, false, true);
+
 	// INIT VARIABLES
 	bPlay = true;
 	id = 0;
@@ -20,13 +29,16 @@ void Game::init()
 
 void Game::start() {
 	scene.init();
+	titlemusic->stop();
+	titlemusic->drop();
+	stagemusic = engine->play2D("music/stages.mp3", true, false, true);
 	id = 6;
 }
 
 bool Game::update(int deltaTime)
 {
 	if(id==0) menu.update(deltaTime);
-	else if(id==6) scene.update(deltaTime);
+	else if (id == 6) scene.update(deltaTime);
 	return bPlay;
 }
 
@@ -39,8 +51,12 @@ void Game::render()
 
 void Game::keyPressed(int key)
 {
-	if(key == 27) // Escape code
+	if (key == 27) { // Escape code
+		engine->drop();
+		if (titlemusic) titlemusic->drop();
+		if (stagemusic) stagemusic->drop();
 		bPlay = false;
+	}
 	keys[key] = true;
 }
 
