@@ -54,6 +54,7 @@ private:
 	irrklang::ISoundEngine* engine;
 	irrklang::ISound* titlemusic;
 	irrklang::ISound* stagemusic;
+	irrklang::ISound* startsfx;
 };
 
 

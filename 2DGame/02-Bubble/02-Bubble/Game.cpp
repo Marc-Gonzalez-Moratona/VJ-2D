@@ -28,10 +28,12 @@ void Game::init()
 }
 
 void Game::start() {
-	scene.init();
+	startsfx = engine->play2D("sfx/start.mp3", false, false, true);
 	titlemusic->stop();
 	titlemusic->drop();
+	while (!startsfx->isFinished()) {}
 	stagemusic = engine->play2D("music/stages.mp3", true, false, true);
+	scene.init();
 	id = 6;
 }
 
@@ -53,6 +55,7 @@ void Game::keyPressed(int key)
 {
 	if (key == 27) { // Escape code
 		engine->drop();
+		if (startsfx) startsfx->drop();
 		if (titlemusic) titlemusic->drop();
 		if (stagemusic) stagemusic->drop();
 		bPlay = false;
