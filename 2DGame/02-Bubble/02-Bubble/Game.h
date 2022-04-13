@@ -40,6 +40,8 @@ public:
 	void mouseMove(int x, int y);
 	void mousePress(int button);
 	void mouseRelease(int button);
+	void win();
+	bool getWinner();
 	
 	bool getKey(int key) const;
 	bool getSpecialKey(int key) const;
@@ -51,6 +53,7 @@ private:
 	Scene scene;                     // Scene to render
 	Menu menu;
 	int id;
+	bool winner;
 	irrklang::ISoundEngine* engine;
 	irrklang::ISound* titlemusic;
 	irrklang::ISound* stagemusic;

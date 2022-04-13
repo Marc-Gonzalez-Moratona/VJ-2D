@@ -1048,6 +1048,15 @@ void Player::update(int deltaTime, int level)
 			platforms[3]->setPosition(glm::vec2(float(tileMapDispl.x + 288), float(tileMapDispl.y + 4250)));
 			break;
 		case 11:
+			if (strawberryUp) {
+				if (strawberryDispl.y > 6) strawberryUp = false;
+				else strawberryDispl.y += 0.35;
+			}
+			else {
+				if (strawberryDispl.y < -6) strawberryUp = true;
+				else strawberryDispl.y -= 0.35;
+			}
+			strawberry->setPosition(glm::vec2(float(tileMapDispl.x + strawberryDispl.x + 204), float(tileMapDispl.y + strawberryDispl.y + 4475)));
 			break;
 		default: break;
 	}
@@ -1119,6 +1128,8 @@ void Player::render(int level)
 		for (int i = 0; i < 4; ++i) if (platformFrames[i] < 30) platforms[i]->render();
 		break;
 	case 11:
+		if (!bStrawberryCollected) strawberry->render();
+		else Game::instance().win();
 		break;
 	default: break;
 	}

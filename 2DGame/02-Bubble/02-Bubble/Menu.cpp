@@ -42,6 +42,7 @@ void Menu::update(int deltaTime) {
 	if (id == 5 && !Game::instance().getKey(8)) bChanging = false;
 	if (id == 6) Game::instance().start();
 	if (bChanging) return;
+
 	if (id == 0) {
 		if (Game::instance().getKey(13)) {
 			scene = menuA;

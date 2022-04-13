@@ -22,6 +22,7 @@ void Game::init()
 
 	// INIT VARIABLES
 	bPlay = true;
+	winner = false;
 	id = 0;
 	glClearColor(0.f, 0.f, 0.f, 1.0f);
 	menu.init();
@@ -35,6 +36,14 @@ void Game::start() {
 	stagemusic = engine->play2D("music/stages.mp3", true, false, true);
 	scene.init();
 	id = 6;
+}
+
+void Game::win() {
+	winner = true;
+}
+
+bool Game::getWinner() {
+	return winner;
 }
 
 bool Game::update(int deltaTime)

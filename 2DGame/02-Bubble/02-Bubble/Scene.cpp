@@ -16,6 +16,8 @@ Scene::Scene()
 {
 	map = NULL;
 	player = NULL;
+	bground = NULL;
+
 }
 
 Scene::~Scene()
@@ -24,12 +26,17 @@ Scene::~Scene()
 		delete map;
 	if(player != NULL)
 		delete player;
+	if (bground != NULL)
+		delete bground;
 }
 
 
 void Scene::init()
 {
+	glm::vec2 geom[2] = { glm::vec2(0.f, 0.f), glm::vec2(640.f, 480.f) };
+	glm::vec2 texCoords[2] = { glm::vec2(0.f, 0.f), glm::vec2(1.f, 1.f) };
 	initShaders();
+	bground = TexturedQuad::createTexturedQuad(geom, texCoords, texProgram);
 
 	background = TileMap::createTileMap("levels/background.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
@@ -43,11 +50,16 @@ void Scene::init()
 	currentTime = 0.0f;
 	level = 1;
 	nextLevel = false;
+
+
 }
 
 
 void Scene::update(int deltaTime)
 {
+	if (Game::instance().getWinner()) {
+		credits.loadFromFile("images/credits.png", TEXTURE_PIXEL_FORMAT_RGBA);
+	}
 	if (map->goNextLevel()) nextLevel = true;
 	else nextLevel = false;
 	currentTime += deltaTime;
@@ -146,9 +158,19 @@ void Scene::update(int deltaTime)
 
 void Scene::render()
 {
-	background->render();
-	map->render();
-	player->render(level);
+	if (Game::instance().getWinner()) {
+		glm::mat4 modelview;
+		texProgram.use();
+		texProgram.setUniformMatrix4f("projection", projection);
+		texProgram.setUniform4f("color", 1.0f, 1.0f, 1.0f, 1.0f);
+		texProgram.setUniformMatrix4f("modelview", modelview);
+		bground->render(credits);
+	}
+	else {
+		background->render();
+		map->render();
+		player->render(level);
+	}
 }
 
 void Scene::initShaders()

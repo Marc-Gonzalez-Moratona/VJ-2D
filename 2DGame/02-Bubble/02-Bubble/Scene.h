@@ -38,6 +38,8 @@ private:
 	glm::vec3 mapposition;
 	int level;
 	bool nextLevel;
+	TexturedQuad* bground;
+	Texture credits;
 };
 
 
