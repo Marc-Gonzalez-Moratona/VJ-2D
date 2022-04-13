@@ -127,6 +127,7 @@ void Scene::update(int deltaTime)
 	}
 	if (Game::instance().getKey('f') || (nextLevel && level == 10)) {
 		level = 11;
+		int score = player->getScore();
 		player->setPosition(glm::vec2((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 192 * map->getTileSize()));
 		player->setInitialPosition((INIT_PLAYER_X_TILES + 2) * map->getTileSize(), 192 * map->getTileSize());
 		player->resetLevel();

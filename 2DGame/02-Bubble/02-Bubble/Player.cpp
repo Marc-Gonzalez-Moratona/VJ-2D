@@ -70,6 +70,7 @@ void Player::init(const glm::ivec2& tileMapPos, ShaderProgram& shaderProgram)
 	bChanging = false;
 	bWallBroken = false;
 	bStrawberryCollected = false;
+	strawberries = 0;
 	strawberryUp = true;
 	cloudDispl = 0;
 	dashDirection = 0;
@@ -482,20 +483,21 @@ void Player::update(int deltaTime, int level)
 		}
 	}
 
-	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9)) {
+	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9) && !bBalloonsCollected[0]) {
 		//strawberrysfx = engine->play2D("sfx/strawberry.mp3", false, false, true);
 		engine->play2D("sfx/strawberry.mp3");
 		bBalloonsCollected[0] = true;
 		dashAngle = 0;
 	}
-	if (spriteCollision(sprite, balloon[1], false) && level == 9) {
+	if (spriteCollision(sprite, balloon[1], false) && level == 9 && !bBalloonsCollected[1]) {
 		engine->play2D("sfx/strawberry.mp3");
 		bBalloonsCollected[1] = true;
 		dashAngle = 0;
 	}
 	
-	if (spriteCollision(sprite, strawberry, false)) {
+	if (spriteCollision(sprite, strawberry, false) && !bStrawberryCollected) {
 		engine->play2D("sfx/strawberry.mp3");
+		strawberries++;
 		bStrawberryCollected = true;
 	}
 	if (spriteCollision(sprite, springLeft, false)) {
@@ -1139,6 +1141,11 @@ void Player::setInitialPosition(int X, int Y)
 	initialY = Y;
 }
 
+int Player::getScore()
+{
+	cout << "Collected Strawberries: " << strawberries << endl;
+	return strawberries;
+}
 
 
 
