@@ -154,10 +154,6 @@ bool TileMap::collisionMoveLeft(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y1 = (pos.y + size.y - 1) / tileSize;
 	for(int y=y0; y<=y1; y++)
 	{
-		if (map[y * mapSize.x + x] == 1 || map[y * mapSize.x + x] == 2 || map[y * mapSize.x + x] == 3 || map[y * mapSize.x + x] == 41 || map[y * mapSize.x + x] == 49)
-		{
-			return false;
-		}
 		if (map[y * mapSize.x + x] == 35)
 		{
 			*posX += displacement;
@@ -179,10 +175,6 @@ bool TileMap::collisionMoveRight(const glm::ivec2 &pos, const glm::ivec2 &size, 
 	y1 = (pos.y + size.y - 1) / tileSize;
 	for(int y=y0; y<=y1; y++)
 	{
-		if (map[y * mapSize.x + x] == 1 || map[y * mapSize.x + x] == 2 || map[y * mapSize.x + x] == 3 || map[y * mapSize.x + x] == 41 || map[y * mapSize.x + x] == 49)
-		{
-			return false;
-		}
 		if (map[y * mapSize.x + x] == 35)
 		{
 			*posX -= displacement;
@@ -204,10 +196,6 @@ bool TileMap::collisionMoveDown(const glm::ivec2 &pos, const glm::ivec2 &size, i
 	y = (pos.y + size.y - 1) / tileSize;
 	for(int x=x0; x<=x1; x++)
 	{
-		if (map[y * mapSize.x + x] == 1 || map[y * mapSize.x + x] == 2 || map[y * mapSize.x + x] == 3 || map[y * mapSize.x + x] == 41 || map[y * mapSize.x + x] == 49)
-		{
-			return false;
-		}
 		if(map[y*mapSize.x+x] == 4 || map[y * mapSize.x + x] == 34)
 		{
 			// RESET LEVEL WHEN TOUCHING SPIKES OR FALLING OUT OF THE LEVEL
@@ -240,10 +228,6 @@ bool TileMap::collisionMoveUp(const glm::ivec2& pos, const glm::ivec2& size, int
 	y = pos.y / tileSize;
 	for (int x = x0; x <= x1; x++)
 	{
-		if (map[y * mapSize.x + x] == 1 || map[y * mapSize.x + x] == 2 || map[y * mapSize.x + x] == 3 || map[y * mapSize.x + x] == 41 || map[y * mapSize.x + x] == 49)
-		{
-			return false;
-		}
 		if (map[y * mapSize.x + x] == 34) nextLevel = true;
 		if (map[y * mapSize.x+x] != 0)
 		{

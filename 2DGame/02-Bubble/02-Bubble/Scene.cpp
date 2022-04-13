@@ -31,6 +31,7 @@ void Scene::init()
 {
 	initShaders();
 
+	background = TileMap::createTileMap("levels/background.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	map = TileMap::createTileMap("levels/level01.txt", glm::vec2(SCREEN_X, SCREEN_Y), texProgram);
 	player = new Player();
 	player->init(glm::ivec2(SCREEN_X, SCREEN_Y), texProgram);
@@ -145,6 +146,7 @@ void Scene::update(int deltaTime)
 
 void Scene::render()
 {
+	background->render();
 	map->render();
 	player->render(level);
 }
