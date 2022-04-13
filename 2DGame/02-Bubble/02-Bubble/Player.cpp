@@ -313,6 +313,7 @@ void Player::update(int deltaTime, int level)
 	if (Game::instance().getKey('c') && jumpAngle == 0) {
 		if (map->collisionMoveDown(posPlayer + FALL_STEP, glm::ivec2(24, 24), &posPlayer.x, &posPlayer.y, initialX, initialY, bGodMode)) {
 			cout << "Jump detected" << endl;
+			engine->play2D("sfx/jump.mp3");
 			if (sprite->animation() == STAND_RIGHT || sprite->animation() == LOOK_DOWN_RIGHT || sprite->animation() == LOOK_UP_RIGHT) sprite->changeAnimation(JUMP_RIGHT);
 			else if (sprite->animation() == STAND_LEFT || sprite->animation() == LOOK_DOWN_LEFT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);
 			bJumping = true;
@@ -482,15 +483,21 @@ void Player::update(int deltaTime, int level)
 	}
 
 	if (spriteCollision(sprite, balloon[0], false) && (level == 6 || level == 8 || level == 9)) {
+		//strawberrysfx = engine->play2D("sfx/strawberry.mp3", false, false, true);
+		engine->play2D("sfx/strawberry.mp3");
 		bBalloonsCollected[0] = true;
 		dashAngle = 0;
 	}
 	if (spriteCollision(sprite, balloon[1], false) && level == 9) {
+		engine->play2D("sfx/strawberry.mp3");
 		bBalloonsCollected[1] = true;
 		dashAngle = 0;
 	}
 	
-	if (spriteCollision(sprite, strawberry, false)) bStrawberryCollected = true; 
+	if (spriteCollision(sprite, strawberry, false)) {
+		engine->play2D("sfx/strawberry.mp3");
+		bStrawberryCollected = true;
+	}
 	if (spriteCollision(sprite, springLeft, false)) {
 		if (level == 3 || level == 8 || level == 9) {
 			bJumping = true;
@@ -499,6 +506,7 @@ void Player::update(int deltaTime, int level)
 			startY = posPlayer.y;
 			springLeft->changeAnimation(CLOSED);
 			bSpringJump = true;
+			engine->play2D("sfx/strawberry.mp3");
 		}
 	}
 	else if(spriteCollision(sprite, springRight, false)) {
@@ -509,6 +517,7 @@ void Player::update(int deltaTime, int level)
 			startY = posPlayer.y;
 			springRight->changeAnimation(CLOSED);
 			bSpringJump = true;
+			engine->play2D("sfx/strawberry.mp3");
 		}
 	}
 
@@ -581,6 +590,7 @@ void Player::update(int deltaTime, int level)
 	// CLIMBJUMPING
 	if (Game::instance().getKey('c') && bClimbing && !bJumping && climbJumpAngle == 0) {
 		cout << "ClimbJump detected" << endl;
+		engine->play2D("sfx/jump.mp3");
 		bClimbJumping = true;
 		bJumping = false;
 		bSpringJump = false;
@@ -610,6 +620,7 @@ void Player::update(int deltaTime, int level)
 	// DASH
 	if (Game::instance().getKey('x') && (!bDashing || bDashMode) && dashAngle == 0) {
 		cout << "Dash detected" << endl;
+		engine->play2D("sfx/dash.mp3");
 		bDashing = true;
 		dashY = posPlayer.y;
 		if (sprite->animation() == STAND_LEFT || sprite->animation() == CLIMB_RIGHT || sprite->animation() == LOOK_UP_LEFT) sprite->changeAnimation(JUMP_LEFT);

@@ -43,6 +43,7 @@ private:
 	bool bGodMode, bSlowMode, bDashMode, bChanging;
 
 	irrklang::ISoundEngine* engine;
+	irrklang::ISound* strawberrysfx;
 };
 
 
